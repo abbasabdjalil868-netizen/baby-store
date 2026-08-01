@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cairo } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   keywords: ['حليب أطفال', 'مستلزمات أطفال', 'حفاضات بامبرز', 'رضّاعات أفينت', 'دفع عند الاستلام', 'طلب عبر الواتساب'],
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className={cairo.variable}>
-      <body className="antialiased bg-[#faf9f6] text-slate-800 font-sans min-h-screen flex flex-col selection:bg-emerald-200 selection:text-emerald-900">
+      <body className="antialiased bg-[#faf9f6] text-slate-800 font-sans min-h-screen flex flex-col selection:bg-emerald-200 selection:text-emerald-900 overflow-x-hidden">
         <CartProvider>
           {children}
         </CartProvider>

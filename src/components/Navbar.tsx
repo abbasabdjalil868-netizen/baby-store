@@ -21,13 +21,13 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-40 bg-white/98 backdrop-blur-md border-b border-slate-100 shadow-xs w-full overflow-hidden">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
-        {/* Row 1: Logo (Right) & User/Cart Actions (Left) */}
+        {/* Row 1: Logo & Actions */}
         <div className="flex items-center justify-between h-14 sm:h-20 w-full">
           
-          {/* Logo (Right in RTL) */}
+          {/* Logo (Right) */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-sm shadow-emerald-500/20">
-              <Milk className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]" />
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-sm shadow-emerald-500/20">
+              <Milk className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base sm:text-2xl text-slate-800 tracking-tight flex items-center gap-1">
@@ -39,7 +39,7 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Search Bar (Middle on md+) */}
+          {/* Desktop Search Bar (Middle) */}
           <div className="hidden md:block flex-1 max-w-xl mx-6">
             <div className="relative">
               <input
@@ -49,7 +49,7 @@ export const Navbar: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 pr-11 pl-10 py-2.5 rounded-full border border-slate-200 focus:outline-none focus:border-emerald-500 focus:bg-white text-sm shadow-inner"
               />
-              <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
@@ -61,7 +61,7 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Buttons (Left in RTL) */}
+          {/* Action Buttons (Left) */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             
             {/* User Profile / Auth Button */}
@@ -70,20 +70,19 @@ export const Navbar: React.FC = () => {
                 {user.role === 'admin' ? (
                   <Link
                     href="/admin"
-                    className="flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1.5 rounded-full text-xs font-bold shadow-xs hover:bg-emerald-200 transition-colors"
+                    className="flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shadow-xs hover:bg-emerald-200 transition-colors"
                   >
                     <Settings className="w-3.5 h-3.5 text-emerald-700" />
-                    <span className="hidden sm:inline">الأدمن (عباس)</span>
-                    <span className="sm:hidden text-[10px]">الأدمن</span>
+                    <span>الأدمن</span>
                   </Link>
                 ) : (
-                  <div className="flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-full text-xs font-bold">
+                  <div className="flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-1 rounded-full text-[11px] font-bold">
                     {user.avatar ? (
                       <img src={user.avatar} alt={user.name} className="w-4 h-4 rounded-full object-cover" />
                     ) : (
                       <User className="w-3.5 h-3.5 text-emerald-600" />
                     )}
-                    <span className="max-w-[60px] sm:max-w-[100px] truncate text-[11px] sm:text-xs">{user.name}</span>
+                    <span className="max-w-[60px] truncate">{user.name}</span>
                   </div>
                 )}
 
@@ -98,7 +97,7 @@ export const Navbar: React.FC = () => {
             ) : (
               <button
                 onClick={openAuthModal}
-                className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
+                className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-colors"
               >
                 <User className="w-3.5 h-3.5 text-emerald-600" />
                 <span>دخول</span>
@@ -119,7 +118,7 @@ export const Navbar: React.FC = () => {
             {/* Cart Button */}
             <button
               onClick={openCart}
-              className="relative flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full shadow-md shadow-emerald-600/20 active:scale-95 transition-all text-xs font-bold"
+              className="relative flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-full shadow-md shadow-emerald-600/20 active:scale-95 transition-all text-xs font-bold"
             >
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden sm:inline">السلة</span>
@@ -133,7 +132,7 @@ export const Navbar: React.FC = () => {
 
         </div>
 
-        {/* Row 2: Full Width Mobile Search Bar (Below Header on Phones) */}
+        {/* Row 2: Mobile Search Bar */}
         <div className="block md:hidden pb-2.5 pt-0.5 w-full">
           <div className="relative w-full">
             <input
