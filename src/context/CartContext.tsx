@@ -91,6 +91,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping above 50,000 IQD
 export const DEFAULT_SHIPPING_FEE = 5000; // 5,000 IQD Delivery fee
+const CURRENCY_CACHE_VERSION = 'v_iqd_2026_01';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -108,14 +109,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load state from storage on mount
+  // Load state from storage on mount with cache version check
   useEffect(() => {
     try {
+      const currentCacheVer = localStorage.getItem('baby_store_cache_ver');
+      if (currentCacheVer !== CURRENCY_CACHE_VERSION) {
+        // Clear old cached products to enforce fresh IQD currency dataset
+        localStorage.removeItem('baby_store_products');
+        localStorage.setItem('baby_store_cache_ver', CURRENCY_CACHE_VERSION);
+        setProducts(DEFAULT_PRODUCTS);
+      } else {
+        const savedProducts = localStorage.getItem('baby_store_products');
+        if (savedProducts) setProducts(JSON.parse(savedProducts));
+      }
+
       const savedUser = sessionStorage.getItem('baby_store_user');
       if (savedUser) setUser(JSON.parse(savedUser));
-
-      const savedProducts = localStorage.getItem('baby_store_products');
-      if (savedProducts) setProducts(JSON.parse(savedProducts));
 
       const savedCart = localStorage.getItem('baby_store_cart');
       if (savedCart) setCart(JSON.parse(savedCart));
@@ -248,13 +257,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    setCart((prev) => prev.filter((item) => item.product.id !== id));
+    setCart((prev) => prev.filter((item) => item.product.id !== item.product.id));
     showToast('تم حذف المنتج من المتجر! 🗑️');
   };
 
   const resetProductsToDefault = () => {
     setProducts(DEFAULT_PRODUCTS);
-    showToast('تم استعادة كافة المنتجات الافتراضية! 🔄');
+    localStorage.setItem('baby_store_products', JSON.stringify(DEFAULT_PRODUCTS));
+    showToast('تم استعادة كافة المنتجات والأسعار بالدينار العراقي! 🔄');
   };
 
   // Cart Operations
