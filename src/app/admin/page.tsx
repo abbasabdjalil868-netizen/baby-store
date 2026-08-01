@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
-import { Product } from '../../data/products';
+import { Product, CATEGORIES, AGE_GROUPS } from '../../data/products';
 import {
   Package,
   ShoppingBag,
@@ -15,7 +15,7 @@ import {
   ArrowRight,
   ShieldAlert,
   Milk,
-  Hash,
+  Tag,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -70,6 +70,24 @@ export default function AdminDashboard() {
       setAuthError('اسم المستخدم أو كلمة السر غير صحيحة!');
     } else {
       setAuthError('');
+    }
+  };
+
+  // Helper to handle Category change
+  const handleCategorySelect = (catId: Product['category']) => {
+    setCategory(catId);
+    const catObj = CATEGORIES.find((c) => c.id === catId);
+    if (catObj) {
+      setCategoryName(catObj.name);
+    }
+  };
+
+  // Helper to handle Age Group change
+  const handleAgeGroupSelect = (ageId: Product['ageGroup']) => {
+    setAgeGroup(ageId);
+    const ageObj = AGE_GROUPS.find((a) => a.id === ageId);
+    if (ageObj) {
+      setAgeLabel(ageObj.label);
     }
   };
 
@@ -374,7 +392,7 @@ export default function AdminDashboard() {
                   <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
                     <tr>
                       <th className="p-4">المنتج</th>
-                      <th className="p-4">الفئة والعمر</th>
+                      <th className="p-4">قسم المنتج والعمر</th>
                       <th className="p-4">السعر</th>
                       <th className="p-4">عدد القطع بالمخزن 📦</th>
                       <th className="p-4 text-center">الإجراءات</th>
@@ -399,7 +417,9 @@ export default function AdminDashboard() {
 
                         <td className="p-4">
                           <div className="flex flex-col gap-1">
-                            <span className="font-medium text-slate-700">{prod.categoryName}</span>
+                            <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md w-fit text-[11px]">
+                              🏷️ {prod.categoryName}
+                            </span>
                             <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full w-fit font-bold">
                               👶 {prod.ageLabel}
                             </span>
@@ -435,7 +455,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleOpenAddModal(prod)}
                               className="p-2 text-slate-500 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 rounded-xl transition-colors"
-                              title="تعديل المنتج والعدد"
+                              title="تعديل المنتج والقسم والعدد"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
@@ -587,20 +607,55 @@ export default function AdminDashboard() {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base font-bold text-slate-900 mb-4">
-              {editingProductId ? 'تعديل بيانات والكمية للمنتج' : 'إضافة منتج جديد للمتجر'}
+            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Tag className="w-5 h-5 text-emerald-600" />
+              <span>{editingProductId ? 'تعديل بيانات والكمية والقسم للمنتج' : 'إضافة منتج جديد وتحديد القسم'}</span>
             </h3>
 
             <form onSubmit={handleSaveProduct} className="space-y-3 text-right text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">اسم المنتج</label>
+                <label className="block font-bold text-slate-700 mb-1">اسم المنتج <span className="text-rose-500">*</span></label>
                 <input
                   type="text"
                   required
+                  placeholder="مثال: حليب أبتاميل 400غ"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
                 />
+              </div>
+
+              {/* Category & Age Group Selectors */}
+              <div className="grid grid-cols-2 gap-3 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
+                <div>
+                  <label className="block font-bold text-emerald-900 mb-1">اختيار قسم المنتج 🏷️ <span className="text-rose-500">*</span></label>
+                  <select
+                    value={category}
+                    onChange={(e) => handleCategorySelect(e.target.value as Product['category'])}
+                    className="w-full bg-white border border-emerald-300 font-bold rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-600"
+                  >
+                    {CATEGORIES.filter(c => c.id !== 'all').map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-900 mb-1">الفئة العمرية المناسبة 👶 <span className="text-rose-500">*</span></label>
+                  <select
+                    value={ageGroup}
+                    onChange={(e) => handleAgeGroupSelect(e.target.value as Product['ageGroup'])}
+                    className="w-full bg-white border border-emerald-300 font-bold rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-600"
+                  >
+                    {AGE_GROUPS.map((age) => (
+                      <option key={age.id} value={age.id}>
+                        {age.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -609,6 +664,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
+                    placeholder="مثال: Aptamil"
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
@@ -620,6 +676,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
+                    placeholder="مثال: علبة 400 غرام"
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
@@ -635,7 +692,7 @@ export default function AdminDashboard() {
                     required
                     value={price}
                     onChange={(e) => setPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold"
                   />
                 </div>
 
@@ -667,6 +724,7 @@ export default function AdminDashboard() {
                 <input
                   type="url"
                   required
+                  placeholder="https://..."
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 dir-ltr text-left"
@@ -674,9 +732,10 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">الوصف التفصيلي</label>
+                <label className="block font-bold text-slate-700 mb-1">الوصف التفصيلي للمنتج</label>
                 <textarea
                   rows={2}
+                  placeholder="اكتب وصفاً مختصراً لفوائد هذا المنتج..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
@@ -696,7 +755,7 @@ export default function AdminDashboard() {
                   type="submit"
                   className="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow-sm"
                 >
-                  حفظ المنتج 💾
+                  حفظ المنتج بالقسم 💾
                 </button>
               </div>
             </form>
