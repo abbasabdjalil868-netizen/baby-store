@@ -10,10 +10,10 @@ export interface CustomerDetails {
   phone: string;
   address: string;
   notes?: string;
-  paymentMethod: 'cod'; // Cash on delivery
+  paymentMethod: 'cod';
 }
 
-export const STORE_WHATSAPP_NUMBER = '9647700000000'; // Default phone number, format without + for wa.me
+export const STORE_WHATSAPP_NUMBER = '9647700000000';
 
 export function generateWhatsAppOrderUrl(
   items: CartItem[],
@@ -23,7 +23,7 @@ export function generateWhatsAppOrderUrl(
   totalPrice: number,
   phoneNumber: string = STORE_WHATSAPP_NUMBER
 ): string {
-  const dateStr = new Date().toLocaleDateString('ar-EG', {
+  const dateStr = new Date().toLocaleDateString('ar-IQ', {
     weekday: 'long',
     year: 'numeric',
     month: 'short',
@@ -47,13 +47,13 @@ export function generateWhatsAppOrderUrl(
   items.forEach((item, index) => {
     const itemTotal = item.product.price * item.quantity;
     message += `${index + 1}. *${item.product.name}*\n`;
-    message += `   └ الكمية: ${item.quantity} | السعر: ${item.product.price} ر.س | الإجمالي: ${itemTotal} ر.س\n`;
+    message += `   └ الكمية: ${item.quantity} | السعر: ${item.product.price.toLocaleString()} د.ع | الإجمالي: ${itemTotal.toLocaleString()} د.ع\n`;
   });
 
   message += `\n💵 *ملخص الحساب:*\n`;
-  message += `• مجموع المنتجات: ${subtotal} ر.س\n`;
-  message += `• كلفة التوصيل: ${shippingFee === 0 ? 'مجاني 🎉' : `${shippingFee} ر.س`}\n`;
-  message += `• *المجموع الكلي النهائي:* *${totalPrice} ر.س*\n\n`;
+  message += `• مجموع المنتجات: ${subtotal.toLocaleString()} د.ع\n`;
+  message += `• كلفة التوصيل: ${shippingFee === 0 ? 'مجاني 🎉' : `${shippingFee.toLocaleString()} د.ع`}\n`;
+  message += `• *المجموع الكلي النهائي:* *${totalPrice.toLocaleString()} د.ع*\n\n`;
 
   message += `━━━━━━━━━━━━━━━━━━━━━\n`;
   message += `يرجى تأكيد الطلب للبدء بالتجهيز والتوصيل فوراً. شكراً لتسوقكم معنا! 🍼✨`;

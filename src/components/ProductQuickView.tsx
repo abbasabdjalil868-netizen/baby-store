@@ -3,11 +3,10 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Plus, Minus, Check, ShieldCheck, Truck, MessageCircle } from 'lucide-react';
-import { STORE_WHATSAPP_NUMBER } from '../utils/whatsapp';
+import { X, Star, Plus, Minus, Check, MessageCircle } from 'lucide-react';
 
 export const ProductQuickView: React.FC = () => {
-  const { quickViewProduct, setQuickViewProduct, addToCart } = useCart();
+  const { quickViewProduct, setQuickViewProduct, addToCart, storePhone } = useCart();
   const [quantity, setQuantity] = useState(1);
 
   if (!quickViewProduct) return null;
@@ -22,8 +21,8 @@ export const ProductQuickView: React.FC = () => {
     handleClose();
   };
 
-  const directWhatsAppUrl = `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    `السلام عليكم، أود الطلب المباشر للمنتج:\n• *${quickViewProduct.name}*\n• الكمية: ${quantity}\n• السعر الإجمالي: ${quickViewProduct.price * quantity} ر.س`
+  const directWhatsAppUrl = `https://wa.me/${storePhone}?text=${encodeURIComponent(
+    `السلام عليكم، أود الطلب المباشر للمنتج:\n• *${quickViewProduct.name}*\n• الكمية: ${quantity}\n• السعر الإجمالي: ${(quickViewProduct.price * quantity).toLocaleString()} د.ع`
   )}`;
 
   return (
@@ -44,7 +43,7 @@ export const ProductQuickView: React.FC = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden z-10 my-auto border border-rose-100"
+          className="relative bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden z-10 my-auto border border-rose-100 dir-rtl"
         >
           {/* Close Button */}
           <button
@@ -95,11 +94,11 @@ export const ProductQuickView: React.FC = () => {
                 {/* Price */}
                 <div className="flex items-baseline gap-2 mb-4 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
                   <span className="text-2xl font-extrabold text-emerald-700">
-                    {quickViewProduct.price * quantity} ر.س
+                    {(quickViewProduct.price * quantity).toLocaleString()} د.ع
                   </span>
                   {quickViewProduct.oldPrice && (
                     <span className="text-sm text-slate-400 line-through">
-                      {quickViewProduct.oldPrice * quantity} ر.س
+                      {(quickViewProduct.oldPrice * quantity).toLocaleString()} د.ع
                     </span>
                   )}
                   <span className="text-xs text-slate-500 mr-auto">({quickViewProduct.unit})</span>

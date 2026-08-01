@@ -84,12 +84,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="flex flex-col">
             {product.oldPrice && (
               <span className="text-[10px] sm:text-xs text-slate-400 line-through">
-                {product.oldPrice} ر.س
+                {product.oldPrice.toLocaleString()} د.ع
               </span>
             )}
             <div className="flex items-baseline gap-0.5 sm:gap-1">
-              <span className="text-base sm:text-lg font-extrabold text-emerald-700">{product.price}</span>
-              <span className="text-[10px] sm:text-xs font-bold text-emerald-600">ر.س</span>
+              <span className="text-sm sm:text-lg font-extrabold text-emerald-700">{product.price.toLocaleString()}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-emerald-600">د.ع</span>
             </div>
           </div>
 

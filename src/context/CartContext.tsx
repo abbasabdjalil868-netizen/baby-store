@@ -89,8 +89,8 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const FREE_SHIPPING_THRESHOLD = 200;
-export const DEFAULT_SHIPPING_FEE = 15;
+export const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping above 50,000 IQD
+export const DEFAULT_SHIPPING_FEE = 5000; // 5,000 IQD Delivery fee
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
