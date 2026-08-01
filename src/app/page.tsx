@@ -10,12 +10,13 @@ import { TrustSignals } from '../components/TrustSignals';
 import { CartDrawer } from '../components/CartDrawer';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { AuthModal } from '../components/AuthModal';
+import { BottomNav } from '../components/BottomNav';
 import { Toast } from '../components/Toast';
 import { Footer } from '../components/Footer';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pb-16 md:pb-0 max-w-full overflow-x-hidden">
       {/* Announcement Top Bar */}
       <AnnouncementBar />
 
@@ -23,12 +24,12 @@ export default function Home() {
       <Navbar />
 
       {/* Page Content */}
-      <main className="flex-1">
+      <main className="flex-1 max-w-full overflow-x-hidden">
         {/* Promotional Hero Section */}
         <HeroBanner />
 
         {/* Store Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-8">
           {/* Filtering Bar */}
           <CategoryFilter />
 
@@ -44,6 +45,7 @@ export default function Home() {
       <CartDrawer />
       <ProductQuickView />
       <AuthModal />
+      <BottomNav />
       <Toast />
 
       {/* Footer */}
