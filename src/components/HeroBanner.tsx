@@ -3,7 +3,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, MessageCircle, ShieldCheck, Truck, Sparkles, HeartHandshake } from 'lucide-react';
-import { STORE_WHATSAPP_NUMBER } from '../utils/whatsapp';
 import { useCart } from '../context/CartContext';
 
 export const HeroBanner: React.FC = () => {
@@ -17,9 +16,9 @@ export const HeroBanner: React.FC = () => {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/80 via-emerald-50/40 to-slate-50 py-8 sm:py-16">
+    <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/80 via-emerald-50/40 to-slate-50 py-6 sm:py-16 w-full">
       
-      {/* Decorative Pastel Orbs */}
+      {/* Decorative Orbs */}
       <div className="absolute top-0 right-10 w-48 sm:w-72 h-48 sm:h-72 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-10 w-56 sm:w-80 h-56 sm:h-80 bg-rose-200/30 rounded-full blur-3xl pointer-events-none" />
 
@@ -33,8 +32,8 @@ export const HeroBanner: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="lg:col-span-7 text-center lg:text-right"
           >
-            <div className="inline-flex items-center gap-1.5 bg-emerald-100/80 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full text-[11px] sm:text-sm font-semibold mb-4 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 bg-emerald-100/80 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full text-[11px] sm:text-sm font-semibold mb-3 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>محل متخصص في حليب ومستلزمات العناية بطفلك</span>
             </div>
 
@@ -50,13 +49,13 @@ export const HeroBanner: React.FC = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 mb-6">
               <button
                 onClick={scrollToProducts}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-md shadow-emerald-600/20 active:scale-98 transition-all text-sm"
               >
                 <ShoppingCart className="w-4 h-4" />
-                <span>تسوق جميع المنتجات</span>
+                <span>تسوق الآن</span>
               </button>
 
               <a
@@ -70,18 +69,18 @@ export const HeroBanner: React.FC = () => {
               </a>
             </div>
 
-            {/* Highlights Bar */}
-            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-200/60 max-w-xl mx-auto lg:mx-0">
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2 text-slate-700 text-[10px] sm:text-sm font-medium">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            {/* Highlights Bar (Single Line Layout on Mobile) */}
+            <div className="grid grid-cols-3 gap-1.5 pt-4 border-t border-slate-200/60 max-w-xl mx-auto lg:mx-0">
+              <div className="flex items-center justify-center lg:justify-start gap-1 text-slate-700 text-[10px] sm:text-xs font-bold whitespace-nowrap">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>منتجات أصلية 100%</span>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2 text-slate-700 text-[10px] sm:text-sm font-medium">
-                <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center justify-center lg:justify-start gap-1 text-slate-700 text-[10px] sm:text-xs font-bold whitespace-nowrap">
+                <Truck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>توصيل سريع للباب</span>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2 text-slate-700 text-[10px] sm:text-sm font-medium">
-                <HeartHandshake className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center justify-center lg:justify-start gap-1 text-slate-700 text-[10px] sm:text-xs font-bold whitespace-nowrap">
+                <HeartHandshake className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>دفع عند الاستلام</span>
               </div>
             </div>
@@ -93,7 +92,7 @@ export const HeroBanner: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="lg:col-span-5 relative mt-4 lg:mt-0"
+            className="lg:col-span-5 relative mt-2 lg:mt-0"
           >
             <div className="relative mx-auto max-w-md lg:max-w-none">
               
@@ -106,7 +105,7 @@ export const HeroBanner: React.FC = () => {
                 <img
                   src="https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800&auto=format&fit=crop&q=80"
                   alt="مستلزمات الأطفال وحليب الرضع"
-                  className="w-full h-44 sm:h-64 object-cover rounded-2xl mb-4 shadow-xs"
+                  className="w-full h-44 sm:h-64 object-cover rounded-2xl mb-3 shadow-xs"
                 />
 
                 <div className="flex items-center justify-between">
