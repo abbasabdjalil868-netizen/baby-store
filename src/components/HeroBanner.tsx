@@ -36,7 +36,7 @@ export const HeroBanner: React.FC = () => {
             </div>
 
             <h1 className="text-xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 leading-snug mb-2">
-              صحة طفلك  <br />
+              صحة طفلك وراحته <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
                 في أيدٍ أمينة مع بيبي كير
               </span>
