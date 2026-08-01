@@ -58,12 +58,12 @@ export const HeroBanner: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Auto-play timer (5 seconds)
+  // Auto-play timer (4 seconds)
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-    }, 5000);
+    }, 4000);
     return () => clearInterval(interval);
   }, [isPaused]);
 
