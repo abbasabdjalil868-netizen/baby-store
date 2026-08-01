@@ -91,7 +91,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping above 50,000 IQD
 export const DEFAULT_SHIPPING_FEE = 5000; // 5,000 IQD Delivery fee
-const CURRENCY_CACHE_VERSION = 'v_iqd_2026_02_fixed_phone';
+const CURRENCY_CACHE_VERSION = 'v_fixed_phone_07725757873';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -109,23 +109,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load state from storage on mount
+  // Load state from storage on mount & ALWAYS force fixed phone number
   useEffect(() => {
     try {
+      // Force phone reset to 9647725757873
+      localStorage.removeItem('baby_store_phone');
+      setStorePhoneState(FIXED_PHONE);
+
       const currentCacheVer = localStorage.getItem('baby_store_cache_ver');
       if (currentCacheVer !== CURRENCY_CACHE_VERSION) {
         localStorage.removeItem('baby_store_products');
-        localStorage.removeItem('baby_store_phone');
         localStorage.setItem('baby_store_cache_ver', CURRENCY_CACHE_VERSION);
         setProducts(DEFAULT_PRODUCTS);
-        setStorePhoneState(FIXED_PHONE);
       } else {
         const savedProducts = localStorage.getItem('baby_store_products');
         if (savedProducts) setProducts(JSON.parse(savedProducts));
-
-        const savedPhone = localStorage.getItem('baby_store_phone');
-        if (savedPhone && savedPhone !== '9647700000000') setStorePhoneState(savedPhone);
-        else setStorePhoneState(FIXED_PHONE);
       }
 
       const savedUser = sessionStorage.getItem('baby_store_user');
@@ -380,7 +378,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addOrder,
         updateOrderStatus,
         deleteOrder,
-        storePhone: storePhone || FIXED_PHONE,
+        storePhone: FIXED_PHONE,
         setStorePhone,
         totalItems,
         subtotal,
