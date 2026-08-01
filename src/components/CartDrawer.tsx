@@ -13,6 +13,7 @@ export const CartDrawer: React.FC = () => {
     closeCart,
     removeFromCart,
     updateQuantity,
+    clearCart,
     subtotal,
     shippingFee,
     totalPrice,
@@ -20,6 +21,7 @@ export const CartDrawer: React.FC = () => {
     progressToFreeShipping,
     addOrder,
     storePhone,
+    showToast,
   } = useCart();
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
@@ -48,10 +50,10 @@ export const CartDrawer: React.FC = () => {
       paymentMethod: 'cod' as const,
     };
 
-    // Log order to store state
+    // 1. Log order to store state
     addOrder(customerDetails);
 
-    // Build WhatsApp URL
+    // 2. Build WhatsApp URL
     const url = generateWhatsAppOrderUrl(
       cart,
       customerDetails,
@@ -61,10 +63,14 @@ export const CartDrawer: React.FC = () => {
       storePhone
     );
 
-    // Open WhatsApp
+    // 3. Clear Cart completely after sending order
+    clearCart();
+
+    // 4. Open WhatsApp
     window.open(url, '_blank');
 
-    // Reset Drawer state
+    // 5. Toast notification & Reset Drawer state
+    showToast('تم إرسال الطلب للواتساب وتفريغ السلة بنجاح! 🛒✨');
     setStep('cart');
     closeCart();
   };
