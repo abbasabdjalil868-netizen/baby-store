@@ -15,6 +15,7 @@ export interface Product {
   features: string[];
   badge?: string;
   inStock: boolean;
+  stockCount: number; // Available inventory quantity
   unit: string;
 }
 
@@ -52,6 +53,7 @@ export const PRODUCTS: Product[] = [
     features: ['مخصص لحديثي الولادة', 'مدعم بأوميغا 3 و 6', 'سهل الهضم ولطيف على المعدة'],
     badge: 'الأكثر مبيعاً',
     inStock: true,
+    stockCount: 30,
     unit: 'علبة 400 غرام'
   },
   {
@@ -71,6 +73,7 @@ export const PRODUCTS: Product[] = [
     features: ['يقلل المغص والغازات', 'مدعم بالحديد والفيتامينات', 'طعم محبوب للأطفال'],
     badge: 'خصم خاص',
     inStock: true,
+    stockCount: 25,
     unit: 'علبة 800 غرام'
   },
   {
@@ -86,10 +89,11 @@ export const PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 156,
     image: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=600&auto=format&fit=crop&q=80',
-    description: 'تركيبة نمو متقدمة تحتوي على HMO الطبيعي لدعم الجهاز المناعي والتطور العقلي والبدني للأطفال فوق السنة.',
+    description: 'تركيبة نمو متتقدمة تحتوي على HMO الطبيعي لدعم الجهاز المناعي والتطور العقلي والبدني للأطفال فوق السنة.',
     features: ['يحتوي على مركب HMO', 'دعم النمو العقلي والبدني', 'خالي من زيت النخيل'],
     badge: 'توفير عائلي',
     inStock: true,
+    stockCount: 15,
     unit: 'علبة اقتصادية 1600غ'
   },
   {
@@ -109,6 +113,7 @@ export const PRODUCTS: Product[] = [
     features: ['ملمس ريشي ناعم', 'امتصاص فائق لمدة 12 ساعة', 'مؤشر جفاف حراري'],
     badge: 'موصى به طبيًا',
     inStock: true,
+    stockCount: 40,
     unit: 'عبوة 56 حفاضة'
   },
   {
@@ -128,6 +133,7 @@ export const PRODUCTS: Product[] = [
     features: ['99.9% ماء نقي', 'خالية تماماً من العطور والمواد الكيميائية', 'آمنة على البشرة الحساسة'],
     badge: '100% طبيعي',
     inStock: true,
+    stockCount: 50,
     unit: 'مجموعة 4 عبوات'
   },
   {
@@ -147,6 +153,7 @@ export const PRODUCTS: Product[] = [
     features: ['درجة حموضة متوازنة 5.5', 'حماية ضد التسلخات والجفاف', 'طبي ومجرب إكلينيكياً'],
     badge: 'مجموعة قيمة',
     inStock: true,
+    stockCount: 18,
     unit: 'طقم 3 قطع'
   },
   {
@@ -166,6 +173,7 @@ export const PRODUCTS: Product[] = [
     features: ['حلمة طبيعية فائقة النعومة', 'صمام مزدوج يقلل الهواء والمغص', 'خالية من BPA تماماً'],
     badge: 'الأعلى تقييماً',
     inStock: true,
+    stockCount: 35,
     unit: 'رضّاعة واحدة'
   },
   {
@@ -185,6 +193,7 @@ export const PRODUCTS: Product[] = [
     features: ['قابلة للتبريد بالثلاجة', 'خامات سيليكون غذائية آمنة', 'تصميم مريح وسهل التنظيف'],
     badge: 'جديد',
     inStock: true,
+    stockCount: 45,
     unit: 'قطعة واحدة'
   },
   {
@@ -204,6 +213,7 @@ export const PRODUCTS: Product[] = [
     features: ['تركيبة لا تسبب الدموع', '98% مكونات طبيعية عضوي', 'عطر رقيق ومنعش'],
     badge: 'عضوي',
     inStock: true,
+    stockCount: 20,
     unit: 'عبوة ضاغط 500 مل'
   }
 ];

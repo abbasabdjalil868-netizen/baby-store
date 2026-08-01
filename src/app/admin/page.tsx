@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCart, Order } from '../../context/CartContext';
+import { useCart } from '../../context/CartContext';
 import { Product } from '../../data/products';
 import {
   Package,
@@ -10,16 +10,12 @@ import {
   Plus,
   Trash2,
   Edit,
-  CheckCircle,
-  XCircle,
   Clock,
-  Phone,
   Settings,
   ArrowRight,
   ShieldAlert,
-  RotateCcw,
-  Sparkles,
   Milk,
+  Hash,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,7 +26,6 @@ export default function AdminDashboard() {
     addProduct,
     updateProduct,
     deleteProduct,
-    resetProductsToDefault,
     orders,
     updateOrderStatus,
     deleteOrder,
@@ -46,7 +41,7 @@ export default function AdminDashboard() {
   const [adminPass, setAdminPass] = useState('');
   const [authError, setAuthError] = useState('');
 
-  // Add Product Form Modal State
+  // Add/Edit Product Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
@@ -59,6 +54,7 @@ export default function AdminDashboard() {
   const [ageLabel, setAgeLabel] = useState('0-6 أشهر');
   const [price, setPrice] = useState<number>(15000);
   const [oldPrice, setOldPrice] = useState<number | undefined>(18000);
+  const [stockCount, setStockCount] = useState<number>(20);
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
   const [unit, setUnit] = useState('علبة 400 غرام');
@@ -158,6 +154,7 @@ export default function AdminDashboard() {
       setAgeLabel(prod.ageLabel);
       setPrice(prod.price);
       setOldPrice(prod.oldPrice);
+      setStockCount(prod.stockCount ?? 20);
       setImage(prod.image);
       setDescription(prod.description);
       setUnit(prod.unit);
@@ -172,6 +169,7 @@ export default function AdminDashboard() {
       setAgeLabel('0-6 أشهر');
       setPrice(15000);
       setOldPrice(18000);
+      setStockCount(20);
       setImage('https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80');
       setDescription('');
       setUnit('علبة 400 غرام');
@@ -184,6 +182,8 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!name || !price || !image) return;
 
+    const inStockStatus = stockCount > 0;
+
     if (editingProductId) {
       updateProduct(editingProductId, {
         name,
@@ -194,6 +194,8 @@ export default function AdminDashboard() {
         ageLabel,
         price,
         oldPrice: oldPrice || undefined,
+        stockCount,
+        inStock: inStockStatus,
         image,
         description,
         unit,
@@ -209,10 +211,11 @@ export default function AdminDashboard() {
         ageLabel,
         price,
         oldPrice: oldPrice || undefined,
+        stockCount,
+        inStock: inStockStatus,
         image,
         description,
         features: ['منتج عالي الجودة لسلامة طفلك', 'شحن وتغليف طبي معتمد'],
-        inStock: true,
         unit,
         badge: badge || undefined,
       });
@@ -316,7 +319,7 @@ export default function AdminDashboard() {
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>إدارة المنتجات ({products.length})</span>
+            <span>إدارة المنتجات والمخزون ({products.length})</span>
           </button>
 
           <button
@@ -352,27 +355,16 @@ export default function AdminDashboard() {
         {/* Tab 1: Products Management */}
         {activeTab === 'products' && (
           <div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-              <h2 className="text-lg font-bold text-slate-900">قائمة منتجات المتجر</h2>
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <h2 className="text-lg font-bold text-slate-900">قائمة ومخزون منتجات المتجر</h2>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={resetProductsToDefault}
-                  className="flex items-center gap-1.5 bg-white border border-slate-300 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-colors"
-                  title="إعادة ضبط المنتجات الافتراضية"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-                  <span>استعادة الافتراضي</span>
-                </button>
-
-                <button
-                  onClick={() => handleOpenAddModal()}
-                  className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>إضافة منتج جديد</span>
-                </button>
-              </div>
+              <button
+                onClick={() => handleOpenAddModal()}
+                className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة منتج جديد</span>
+              </button>
             </div>
 
             {/* Products Table */}
@@ -384,7 +376,7 @@ export default function AdminDashboard() {
                       <th className="p-4">المنتج</th>
                       <th className="p-4">الفئة والعمر</th>
                       <th className="p-4">السعر</th>
-                      <th className="p-4">حالة التوفر</th>
+                      <th className="p-4">عدد القطع بالمخزن 📦</th>
                       <th className="p-4 text-center">الإجراءات</th>
                     </tr>
                   </thead>
@@ -408,7 +400,7 @@ export default function AdminDashboard() {
                         <td className="p-4">
                           <div className="flex flex-col gap-1">
                             <span className="font-medium text-slate-700">{prod.categoryName}</span>
-                            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full w-fit">
+                            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full w-fit font-bold">
                               👶 {prod.ageLabel}
                             </span>
                           </div>
@@ -425,17 +417,17 @@ export default function AdminDashboard() {
                           </div>
                         </td>
 
+                        {/* Stock Count Column */}
                         <td className="p-4">
-                          <button
-                            onClick={() => updateProduct(prod.id, { inStock: !prod.inStock })}
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                              prod.inStock
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-rose-100 text-rose-800'
-                            }`}
-                          >
-                            {prod.inStock ? 'متوفر بالمخزن' : 'نفذت الكمية'}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              (prod.stockCount ?? 0) > 0
+                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                                : 'bg-rose-100 text-rose-800 border border-rose-200'
+                            }`}>
+                              {(prod.stockCount ?? 0) > 0 ? `${prod.stockCount ?? 20} قطعة متوفرة` : 'نفذت الكمية ❌'}
+                            </span>
+                          </div>
                         </td>
 
                         <td className="p-4">
@@ -443,7 +435,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleOpenAddModal(prod)}
                               className="p-2 text-slate-500 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 rounded-xl transition-colors"
-                              title="تعديل المنتج"
+                              title="تعديل المنتج والعدد"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
@@ -596,7 +588,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
             <h3 className="text-base font-bold text-slate-900 mb-4">
-              {editingProductId ? 'تعديل بيانات المنتج' : 'إضافة منتج جديد للمتجر'}
+              {editingProductId ? 'تعديل بيانات والكمية للمنتج' : 'إضافة منتج جديد للمتجر'}
             </h3>
 
             <form onSubmit={handleSaveProduct} className="space-y-3 text-right text-xs">
@@ -635,7 +627,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">السعر (د.ع)</label>
                   <input
@@ -648,12 +640,24 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">السعر السابق (اختياري)</label>
+                  <label className="block font-bold text-slate-700 mb-1">السعر السابق</label>
                   <input
                     type="number"
                     value={oldPrice || ''}
                     onChange={(e) => setOldPrice(e.target.value ? Number(e.target.value) : undefined)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-800 mb-1">العدد بالمخزن 📦</label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    value={stockCount}
+                    onChange={(e) => setStockCount(Number(e.target.value))}
+                    className="w-full bg-emerald-50 border border-emerald-300 font-bold rounded-xl px-3 py-2 text-slate-900"
                   />
                 </div>
               </div>
