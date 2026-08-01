@@ -110,8 +110,6 @@ export const HeroBanner: React.FC = () => {
                     <p className="text-slate-400 text-[10px]">حليب + حفاضات + عناية</p>
                   </div>
                   <div className="text-left">
-                    <span className="text-[10px] text-rose-500 line-through block">260 ر.س</span>
-                    <span className="text-sm sm:text-lg font-extrabold text-emerald-600">199 ر.س</span>
                   </div>
                 </div>
               </div>
