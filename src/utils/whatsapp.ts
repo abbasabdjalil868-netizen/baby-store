@@ -13,7 +13,8 @@ export interface CustomerDetails {
   paymentMethod: 'cod';
 }
 
-export const STORE_WHATSAPP_NUMBER = '9647700000000';
+// Permanent Store WhatsApp Number (07725757873 -> 9647725757873)
+export const STORE_WHATSAPP_NUMBER = '9647725757873';
 
 export function generateWhatsAppOrderUrl(
   items: CartItem[],
@@ -23,6 +24,8 @@ export function generateWhatsAppOrderUrl(
   totalPrice: number,
   phoneNumber: string = STORE_WHATSAPP_NUMBER
 ): string {
+  const targetPhone = phoneNumber && phoneNumber !== '9647700000000' ? phoneNumber : STORE_WHATSAPP_NUMBER;
+
   const dateStr = new Date().toLocaleDateString('ar-IQ', {
     weekday: 'long',
     year: 'numeric',
@@ -59,5 +62,5 @@ export function generateWhatsAppOrderUrl(
   message += `يرجى تأكيد الطلب للبدء بالتجهيز والتوصيل فوراً. شكراً لتسوقكم معنا! 🍼✨`;
 
   const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+  return `https://wa.me/${targetPhone}?text=${encodedMessage}`;
 }

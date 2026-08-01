@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
-import { CartItem, CustomerDetails, STORE_WHATSAPP_NUMBER as DEFAULT_PHONE } from '../utils/whatsapp';
+import { CartItem, CustomerDetails, STORE_WHATSAPP_NUMBER as FIXED_PHONE } from '../utils/whatsapp';
 
 export interface UserProfile {
   name: string;
@@ -91,7 +91,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping above 50,000 IQD
 export const DEFAULT_SHIPPING_FEE = 5000; // 5,000 IQD Delivery fee
-const CURRENCY_CACHE_VERSION = 'v_iqd_2026_01';
+const CURRENCY_CACHE_VERSION = 'v_iqd_2026_02_fixed_phone';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -100,7 +100,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [storePhone, setStorePhoneState] = useState<string>(DEFAULT_PHONE);
+  const [storePhone, setStorePhoneState] = useState<string>(FIXED_PHONE);
 
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -109,18 +109,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load state from storage on mount with cache version check
+  // Load state from storage on mount
   useEffect(() => {
     try {
       const currentCacheVer = localStorage.getItem('baby_store_cache_ver');
       if (currentCacheVer !== CURRENCY_CACHE_VERSION) {
-        // Clear old cached products to enforce fresh IQD currency dataset
         localStorage.removeItem('baby_store_products');
+        localStorage.removeItem('baby_store_phone');
         localStorage.setItem('baby_store_cache_ver', CURRENCY_CACHE_VERSION);
         setProducts(DEFAULT_PRODUCTS);
+        setStorePhoneState(FIXED_PHONE);
       } else {
         const savedProducts = localStorage.getItem('baby_store_products');
         if (savedProducts) setProducts(JSON.parse(savedProducts));
+
+        const savedPhone = localStorage.getItem('baby_store_phone');
+        if (savedPhone && savedPhone !== '9647700000000') setStorePhoneState(savedPhone);
+        else setStorePhoneState(FIXED_PHONE);
       }
 
       const savedUser = sessionStorage.getItem('baby_store_user');
@@ -131,9 +136,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const savedOrders = localStorage.getItem('baby_store_orders');
       if (savedOrders) setOrders(JSON.parse(savedOrders));
-
-      const savedPhone = localStorage.getItem('baby_store_phone');
-      if (savedPhone) setStorePhoneState(savedPhone);
     } catch (e) {
       console.error('Failed to load storage', e);
     }
@@ -257,7 +259,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    setCart((prev) => prev.filter((item) => item.product.id !== item.product.id));
+    setCart((prev) => prev.filter((item) => item.product.id !== productId));
     showToast('تم حذف المنتج من المتجر! 🗑️');
   };
 
@@ -378,7 +380,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addOrder,
         updateOrderStatus,
         deleteOrder,
-        storePhone,
+        storePhone: storePhone || FIXED_PHONE,
         setStorePhone,
         totalItems,
         subtotal,
