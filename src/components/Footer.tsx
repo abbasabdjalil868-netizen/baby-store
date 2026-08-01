@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2.5 text-xs">
               <li>
                 <a href="#products-section" className="hover:text-emerald-400 transition-colors">
-                  حليب طبي وصناعي للرضع
+                  حليب طبي  للرضع
                 </a>
               </li>
               <li>
