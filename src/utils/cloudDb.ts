@@ -1,36 +1,68 @@
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 
-// Firebase Realtime Cloud Database Endpoint for Baby Store
+const LOCAL_STORAGE_KEY = 'baby_store_persistent_products_v3';
 const CLOUD_DB_URL = 'https://baby-care-store-iq-default-rtdb.firebaseio.com/products.json';
 
 /**
- * Fetch live products from Cloud Database (for all customers globally)
+ * Get products from local storage fallback
  */
-export async function fetchCloudProducts(): Promise<Product[]> {
+export function getLocalProducts(): Product[] {
+  if (typeof window === 'undefined') return DEFAULT_PRODUCTS;
   try {
-    const res = await fetch(CLOUD_DB_URL, {
-      cache: 'no-store', // Always fetch fresh live data
-    });
-    if (!res.ok) {
-      return DEFAULT_PRODUCTS;
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     }
-    const data = await res.json();
-    if (!data || !Array.isArray(data) || data.length === 0) {
-      // If DB is empty, initialize with default products
-      await saveCloudProducts(DEFAULT_PRODUCTS);
-      return DEFAULT_PRODUCTS;
-    }
-    return data;
-  } catch (error) {
-    console.error('Cloud DB Fetch Error:', error);
-    return DEFAULT_PRODUCTS;
+  } catch (e) {
+    console.error('Local Storage Read Error', e);
+  }
+  return DEFAULT_PRODUCTS;
+}
+
+/**
+ * Save products to local storage fallback
+ */
+export function saveLocalProducts(products: Product[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+  } catch (e) {
+    console.error('Local Storage Write Error', e);
   }
 }
 
 /**
- * Save / Update products in Cloud Database (Admin Abbas)
+ * Fetch live products from Cloud DB with local fallback
+ */
+export async function fetchCloudProducts(): Promise<Product[]> {
+  const localList = getLocalProducts();
+  try {
+    const res = await fetch(CLOUD_DB_URL, {
+      cache: 'no-store',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        saveLocalProducts(data);
+        return data;
+      }
+    }
+  } catch (error) {
+    console.error('Cloud DB Fetch Error:', error);
+  }
+  return localList;
+}
+
+/**
+ * Save products to both Cloud DB and Local Storage
  */
 export async function saveCloudProducts(products: Product[]): Promise<boolean> {
+  // Always save locally first so refresh NEVER erases products!
+  saveLocalProducts(products);
+
   try {
     const res = await fetch(CLOUD_DB_URL, {
       method: 'PUT',

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 import { CartItem, CustomerDetails, STORE_WHATSAPP_NUMBER as FIXED_PHONE } from '../utils/whatsapp';
-import { fetchCloudProducts, saveCloudProducts } from '../utils/cloudDb';
+import { fetchCloudProducts, saveCloudProducts, getLocalProducts, saveLocalProducts } from '../utils/cloudDb';
 
 export interface UserProfile {
   name: string;
@@ -98,7 +98,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
+  // Initialize with local products immediately so refresh NEVER erases user data
+  const [products, setProducts] = useState<Product[]>(getLocalProducts);
   const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -111,7 +112,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load live products from Cloud Database on mount for all customers & devices
+  // Mount sync: Fetch Cloud products and update state if Cloud DB has valid array
   useEffect(() => {
     async function initCloudSync() {
       setIsSyncingCloud(true);
@@ -225,7 +226,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 3000);
   };
 
-  // Products CRUD - Instantly Syncs to Cloud DB
+  // Products CRUD - Saves locally AND to Cloud DB
   const addProduct = async (newProdData: Omit<Product, 'id' | 'rating' | 'reviewsCount'>) => {
     const newProduct: Product = {
       ...newProdData,
@@ -235,30 +236,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     const updated = [newProduct, ...products];
     setProducts(updated);
-    showToast(`جاري نشر المنتج "${newProduct.name}" لجميع الزبائن... ☁️`);
+    saveLocalProducts(updated);
+    showToast(`تم حفظ وتثبيت المنتج "${newProduct.name}" بنجاح! ✨`);
     await saveCloudProducts(updated);
-    showToast(`تم نشر المنتج "${newProduct.name}" وهو ظاهراً لجميع الزبائن الآن! 🎉`);
   };
 
   const updateProduct = async (id: string, updatedFields: Partial<Product>) => {
     const updated = products.map((p) => (p.id === id ? { ...p, ...updatedFields } : p));
     setProducts(updated);
-    showToast('جاري حفظ التعديلات سحابياً... ☁️');
+    saveLocalProducts(updated);
+    showToast('تم حفظ التعديلات بنجاح! 📝');
     await saveCloudProducts(updated);
-    showToast('تم تحديث المنتج لجميع الزبائن بنجاح! 📝');
   };
 
   const deleteProduct = async (id: string) => {
     const updated = products.filter((p) => p.id !== id);
     setProducts(updated);
+    saveLocalProducts(updated);
     setCart((prev) => prev.filter((item) => item.product.id !== id));
-    showToast('جاري إزالة المنتج من السحابة... ☁️');
+    showToast('تم حذف المنتج بنجاح! 🗑️');
     await saveCloudProducts(updated);
-    showToast('تم حذف المنتج نهائياً من متجر كافة الزبائن! 🗑️');
   };
 
   const resetProductsToDefault = async () => {
     setProducts(DEFAULT_PRODUCTS);
+    saveLocalProducts(DEFAULT_PRODUCTS);
     await saveCloudProducts(DEFAULT_PRODUCTS);
     showToast('تم استعادة كافة المنتجات الافتراضية سحابياً! 🔄');
   };
