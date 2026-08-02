@@ -13,7 +13,7 @@ export interface CustomerDetails {
   paymentMethod: 'cod';
 }
 
-// Fixed Store WhatsApp Number (07725757873 -> 9647725757873)
+// Permanent Store WhatsApp Number (07725757873 -> 9647725757873)
 export const STORE_WHATSAPP_NUMBER = '9647725757873';
 
 export function generateWhatsAppOrderUrl(
@@ -24,10 +24,8 @@ export function generateWhatsAppOrderUrl(
   totalPrice: number,
   phoneNumber: string = STORE_WHATSAPP_NUMBER
 ): string {
-  // Enforce 9647725757873
-  const targetPhone = (phoneNumber && phoneNumber.length > 8 && !phoneNumber.includes('0000000')) 
-    ? phoneNumber 
-    : STORE_WHATSAPP_NUMBER;
+  // STRICTLY HARDCODED TO 9647725757873 - NO FALLBACKS, NO CACHE!
+  const targetPhone = '9647725757873';
 
   const dateStr = new Date().toLocaleDateString('ar-IQ', {
     weekday: 'long',

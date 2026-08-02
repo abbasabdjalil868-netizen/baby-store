@@ -584,7 +584,7 @@ export default function AdminDashboard() {
                 <input
                   type="text"
                   required
-                  placeholder="9647700000000"
+                  placeholder="9647725757873"
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 text-left dir-ltr focus:outline-none focus:border-emerald-500"
