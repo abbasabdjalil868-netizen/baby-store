@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCart } from '../../context/CartContext';
+import { useCart, Order } from '../../context/CartContext';
 import { Product, CATEGORIES, AGE_GROUPS } from '../../data/products';
 import { BannerItem } from '../../data/banners';
 import {
@@ -20,6 +20,9 @@ import {
   Sparkles,
   Image as ImageIcon,
   Upload,
+  Printer,
+  X,
+  CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -96,6 +99,9 @@ export default function AdminDashboard() {
   const [bannerImage, setBannerImage] = useState('');
   const [bannerCtaText, setBannerCtaText] = useState('تصفح العروض الآن 🛒');
 
+  // Invoice Print Modal State
+  const [selectedPrintOrder, setSelectedPrintOrder] = useState<Order | null>(null);
+
   // Phone settings field
   const [phoneInput, setPhoneInput] = useState(storePhone);
 
@@ -166,7 +172,6 @@ export default function AdminDashboard() {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          // Compress to lightweight 80% JPEG
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
           targetSetter(compressedDataUrl);
           setIsUploadingImage(false);
@@ -180,6 +185,10 @@ export default function AdminDashboard() {
     };
 
     reader.readAsDataURL(file);
+  };
+
+  const triggerWindowPrint = () => {
+    window.print();
   };
 
   // If not logged in as Admin abbas / 20012001, render login screen
@@ -395,9 +404,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dir-rtl font-sans pb-12">
-      {/* Admin Top Header */}
-      <header className="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <div className="min-h-screen bg-slate-100 dir-rtl font-sans pb-12 print:bg-white print:p-0">
+      {/* Admin Top Header (Hidden on Print) */}
+      <header className="bg-slate-900 text-white sticky top-0 z-30 shadow-md print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           <div className="flex items-center gap-3">
@@ -425,8 +434,8 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      {/* Main Container (Hidden on Print) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 print:hidden">
         
         {/* KPI Stats Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -716,7 +725,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Tab 3: Orders Log */}
+        {/* Tab 3: Orders Log with Printable Invoice Button */}
         {activeTab === 'orders' && (
           <div>
             <h2 className="text-lg font-bold text-slate-900 mb-4">سجل الطلبات الواردة عبر الواتساب</h2>
@@ -778,6 +787,16 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {/* Print Invoice Button */}
+                        <button
+                          onClick={() => setSelectedPrintOrder(ord)}
+                          className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 text-blue-800 transition-colors flex items-center gap-1 border border-blue-200"
+                          title="طباعة الفاتورة ووصل التوصيل"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-blue-600" />
+                          <span>طباعة الفاتورة 🖨️</span>
+                        </button>
+
                         <button
                           onClick={() =>
                             updateOrderStatus(
@@ -843,7 +862,7 @@ export default function AdminDashboard() {
 
       {/* Add / Edit Product Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs print:hidden">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
             <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Tag className="w-5 h-5 text-emerald-600" />
@@ -1051,7 +1070,7 @@ export default function AdminDashboard() {
 
       {/* Add / Edit Banner Modal */}
       {isBannerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs print:hidden">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
             <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
               <ImageIcon className="w-5 h-5 text-emerald-600" />
@@ -1149,6 +1168,144 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Printable Invoice Modal / Window */}
+      {selectedPrintOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs dir-rtl">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 relative max-h-[95vh] overflow-y-auto print:max-w-none print:w-full print:p-0 print:shadow-none print:border-none print:rounded-none">
+            
+            {/* Action Bar (Hidden on Print) */}
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100 print:hidden">
+              <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm">
+                <Printer className="w-5 h-5 text-emerald-600" />
+                <span>معاينة الفاتورة الجاهزة للطباعة</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={triggerWindowPrint}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2 rounded-xl text-xs shadow-md transition-colors flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>طباعة الوصل الآن 🖨️</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedPrintOrder(null)}
+                  className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Invoice Content Sheet */}
+            <div className="p-4 sm:p-6 border border-slate-300 rounded-2xl bg-white text-slate-900 font-sans print:border-none print:p-0">
+              
+              {/* Receipt Header */}
+              <div className="flex items-center justify-between pb-6 border-b-2 border-slate-900">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-xs">
+                    🍼
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-black text-slate-900">متجر بيبي كير مستلزمات الأطفال</h1>
+                    <p className="text-xs text-slate-600 font-bold">Baby Care Store • هاتف: 07725757873</p>
+                  </div>
+                </div>
+
+                <div className="text-left">
+                  <span className="inline-block bg-slate-900 text-white font-black text-xs px-3 py-1 rounded-md mb-1">
+                    فاتورة توصيل # {selectedPrintOrder.id}
+                  </span>
+                  <span className="block text-[11px] text-slate-500 font-bold">
+                    التاريخ: {new Date(selectedPrintOrder.createdAt).toLocaleDateString('ar-IQ')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Customer Shipping Info Box */}
+              <div className="my-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <h3 className="text-xs font-black text-slate-900 mb-2 underline decoration-emerald-500 decoration-2">
+                  بيانات الزبون وعنوان التوصيل:
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800">
+                  <div><strong>اسم الزبون:</strong> {selectedPrintOrder.customer.name}</div>
+                  <div><strong>رقم الهاتف:</strong> {selectedPrintOrder.customer.phone}</div>
+                  <div className="sm:col-span-2"><strong>عنوان التوصيل:</strong> {selectedPrintOrder.customer.address}</div>
+                  <div><strong>طريقة الدفع:</strong> <span className="font-extrabold text-emerald-800">الدفع عند الاستلام (COD)</span></div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="mb-6 overflow-x-auto">
+                <table className="w-full text-right text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900 text-white font-bold">
+                      <th className="p-2.5 border border-slate-900">#</th>
+                      <th className="p-2.5 border border-slate-900">اسم المادة والمواصفات</th>
+                      <th className="p-2.5 border border-slate-900 text-center">الكمية</th>
+                      <th className="p-2.5 border border-slate-900">سعر المفرد</th>
+                      <th className="p-2.5 border border-slate-900">المجموع</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedPrintOrder.items.map((item, index) => (
+                      <tr key={index} className="border-b border-slate-200">
+                        <td className="p-2.5 border border-slate-200 text-center font-bold">{index + 1}</td>
+                        <td className="p-2.5 border border-slate-200 font-bold">
+                          {item.product.name} ({item.product.brand})
+                        </td>
+                        <td className="p-2.5 border border-slate-200 text-center font-black text-sm">
+                          {item.quantity}
+                        </td>
+                        <td className="p-2.5 border border-slate-200">
+                          {item.product.price.toLocaleString()} د.ع
+                        </td>
+                        <td className="p-2.5 border border-slate-200 font-bold text-emerald-800">
+                          {(item.product.price * item.quantity).toLocaleString()} د.ع
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Financial Totals Summary Box */}
+              <div className="flex justify-end mb-6">
+                <div className="w-full sm:w-72 bg-slate-50 p-4 rounded-xl border border-slate-300 space-y-2 text-xs">
+                  <div className="flex justify-between text-slate-600">
+                    <span>مجموع المواد:</span>
+                    <span className="font-bold">{selectedPrintOrder.subtotal.toLocaleString()} د.ع</span>
+                  </div>
+
+                  <div className="flex justify-between text-slate-600">
+                    <span>أجور التوصيل:</span>
+                    <span className="font-bold">
+                      {selectedPrintOrder.shippingFee === 0 ? 'مجاني 🚚' : `${selectedPrintOrder.shippingFee.toLocaleString()} د.ع`}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-300">
+                    <span>المبلغ النهائي المطلوب عند التسليم:</span>
+                    <span className="text-emerald-700 text-base">{selectedPrintOrder.totalPrice.toLocaleString()} د.ع</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invoice Footer */}
+              <div className="pt-4 border-t border-slate-200 text-center text-xs text-slate-500 space-y-1">
+                <p className="font-bold text-slate-800 flex items-center justify-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 inline" />
+                  <span>شكراً لثقتكم بمتجر بيبي كير 👶🍼 نتمنى لطفلكم وافر الصحة والعافية!</span>
+                </p>
+                <p className="text-[10px] text-slate-400">لأي استفسار يرجى الاتصال بنا عبر الرقم: 07725757873</p>
+              </div>
+
+            </div>
           </div>
         </div>
       )}
