@@ -2,8 +2,18 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
+import { BannerItem, DEFAULT_BANNERS } from '../data/banners';
 import { CartItem, CustomerDetails, STORE_WHATSAPP_NUMBER as FIXED_PHONE } from '../utils/whatsapp';
-import { fetchCloudProducts, saveCloudProducts, getLocalProducts, saveLocalProducts } from '../utils/cloudDb';
+import {
+  fetchCloudProducts,
+  saveCloudProducts,
+  getLocalProducts,
+  saveLocalProducts,
+  fetchCloudBanners,
+  saveCloudBanners,
+  getLocalBanners,
+  saveLocalBanners,
+} from '../utils/cloudDb';
 
 export interface UserProfile {
   name: string;
@@ -42,6 +52,12 @@ interface CartContextType {
   deleteProduct: (id: string) => void;
   resetProductsToDefault: () => void;
   isSyncingCloud: boolean;
+
+  // Banners Management
+  banners: BannerItem[];
+  addBanner: (banner: Omit<BannerItem, 'id'>) => void;
+  updateBanner: (id: string, banner: Partial<BannerItem>) => void;
+  deleteBanner: (id: string) => void;
 
   // Cart Management
   cart: CartItem[];
@@ -98,8 +114,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
-  // Initialize with local products immediately so refresh NEVER erases user data
   const [products, setProducts] = useState<Product[]>(getLocalProducts);
+  const [banners, setBanners] = useState<BannerItem[]>(getLocalBanners);
   const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -112,7 +128,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Mount sync: Fetch Cloud products and update state ONLY if Cloud DB has equal/more items
+  // Mount sync: Fetch Cloud products & banners
   useEffect(() => {
     async function initCloudSync() {
       setIsSyncingCloud(true);
@@ -120,6 +136,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const cloudProds = await fetchCloudProducts();
       if (cloudProds && cloudProds.length >= localList.length) {
         setProducts(cloudProds);
+      }
+
+      const cloudBanners = await fetchCloudBanners();
+      if (cloudBanners && cloudBanners.length > 0) {
+        setBanners(cloudBanners);
       }
       setIsSyncingCloud(false);
     }
@@ -266,6 +287,35 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('تم استعادة كافة المنتجات الافتراضية سحابياً! 🔄');
   };
 
+  // Banners CRUD
+  const addBanner = async (bannerData: Omit<BannerItem, 'id'>) => {
+    const newBanner: BannerItem = {
+      ...bannerData,
+      id: 'b_' + Date.now(),
+    };
+    const updated = [...banners, newBanner];
+    setBanners(updated);
+    saveLocalBanners(updated);
+    showToast('تم إضافة البنر الإعلاني الجديد بنجاح! 🎡');
+    await saveCloudBanners(updated);
+  };
+
+  const updateBanner = async (id: string, bannerData: Partial<BannerItem>) => {
+    const updated = banners.map((b) => (b.id === id ? { ...b, ...bannerData } : b));
+    setBanners(updated);
+    saveLocalBanners(updated);
+    showToast('تم تحديث البنر الإعلاني بنجاح! 🎡');
+    await saveCloudBanners(updated);
+  };
+
+  const deleteBanner = async (id: string) => {
+    const updated = banners.filter((b) => b.id !== id);
+    setBanners(updated);
+    saveLocalBanners(updated);
+    showToast('تم حذف البنر الإعلاني بنجاح! 🗑️');
+    await saveCloudBanners(updated);
+  };
+
   // Cart Operations
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart((prevCart) => {
@@ -317,7 +367,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return p;
       });
 
-      // Save updated stock state locally & push to Cloud DB
       saveLocalProducts(updatedProds);
       saveCloudProducts(updatedProds);
       return updatedProds;
@@ -388,6 +437,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteProduct,
         resetProductsToDefault,
         isSyncingCloud,
+        banners,
+        addBanner,
+        updateBanner,
+        deleteBanner,
         cart,
         addToCart,
         removeFromCart,

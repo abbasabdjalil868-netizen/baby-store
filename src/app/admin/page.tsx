@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { Product, CATEGORIES, AGE_GROUPS } from '../../data/products';
+import { BannerItem } from '../../data/banners';
 import {
   Package,
   ShoppingBag,
@@ -17,6 +18,7 @@ import {
   Milk,
   Tag,
   Sparkles,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -43,6 +45,10 @@ export default function AdminDashboard() {
     addProduct,
     updateProduct,
     deleteProduct,
+    banners,
+    addBanner,
+    updateBanner,
+    deleteBanner,
     orders,
     updateOrderStatus,
     deleteOrder,
@@ -51,7 +57,7 @@ export default function AdminDashboard() {
     loginAdmin,
   } = useCart();
 
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'settings'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'banners' | 'orders' | 'settings'>('products');
 
   // Login form state for protected view
   const [adminUser, setAdminUser] = useState('');
@@ -62,7 +68,7 @@ export default function AdminDashboard() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
-  // Form Fields
+  // Form Fields for Products
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [category, setCategory] = useState<Product['category']>('milk');
@@ -77,6 +83,15 @@ export default function AdminDashboard() {
   const [unit, setUnit] = useState('علبة 400 غرام');
   const [badge, setBadge] = useState('');
   const [customBadge, setCustomBadge] = useState('');
+
+  // Add/Edit Banner Modal State
+  const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
+  const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
+  const [bannerTitle, setBannerTitle] = useState('');
+  const [bannerSubtitle, setBannerSubtitle] = useState('');
+  const [bannerBadge, setBannerBadge] = useState('');
+  const [bannerImage, setBannerImage] = useState('');
+  const [bannerCtaText, setBannerCtaText] = useState('تصفح العروض الآن 🛒');
 
   // Phone settings field
   const [phoneInput, setPhoneInput] = useState(storePhone);
@@ -269,6 +284,51 @@ export default function AdminDashboard() {
     setIsAddModalOpen(false);
   };
 
+  // Banner Modal Handlers
+  const handleOpenBannerModal = (ban?: BannerItem) => {
+    if (ban) {
+      setEditingBannerId(ban.id);
+      setBannerTitle(ban.title);
+      setBannerSubtitle(ban.subtitle);
+      setBannerBadge(ban.badge);
+      setBannerImage(ban.image);
+      setBannerCtaText(ban.ctaText || 'تصفح العروض الآن 🛒');
+    } else {
+      setEditingBannerId(null);
+      setBannerTitle('');
+      setBannerSubtitle('');
+      setBannerBadge('تخفيضات مميزة 🍼');
+      setBannerImage('https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&auto=format&fit=crop&q=80');
+      setBannerCtaText('تسوق الآن 🛒');
+    }
+    setIsBannerModalOpen(true);
+  };
+
+  const handleSaveBanner = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bannerTitle || !bannerImage) return;
+
+    if (editingBannerId) {
+      updateBanner(editingBannerId, {
+        title: bannerTitle,
+        subtitle: bannerSubtitle,
+        badge: bannerBadge,
+        image: bannerImage,
+        ctaText: bannerCtaText,
+      });
+    } else {
+      addBanner({
+        title: bannerTitle,
+        subtitle: bannerSubtitle,
+        badge: bannerBadge,
+        image: bannerImage,
+        ctaText: bannerCtaText,
+      });
+    }
+
+    setIsBannerModalOpen(false);
+  };
+
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     if (phoneInput.trim()) {
@@ -357,7 +417,7 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2 border-b border-slate-200 mb-6 pb-2 overflow-x-auto">
           <button
             onClick={() => setActiveTab('products')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 ${
               activeTab === 'products'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-white text-slate-600 hover:bg-slate-200/60'
@@ -368,8 +428,20 @@ export default function AdminDashboard() {
           </button>
 
           <button
+            onClick={() => setActiveTab('banners')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 ${
+              activeTab === 'banners'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-white text-slate-600 hover:bg-slate-200/60'
+            }`}
+          >
+            <ImageIcon className="w-4 h-4" />
+            <span>إدارة البنرات المتحركة 🎡 ({banners.length})</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all relative ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 relative ${
               activeTab === 'orders'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-white text-slate-600 hover:bg-slate-200/60'
@@ -386,7 +458,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 ${
               activeTab === 'settings'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-white text-slate-600 hover:bg-slate-200/60'
@@ -433,7 +505,7 @@ export default function AdminDashboard() {
                             <img
                               src={prod.image}
                               alt={prod.name}
-                              className="w-12 h-12 object-cover rounded-xl border border-slate-200 bg-slate-50"
+                              className="w-12 h-12 object-contain rounded-xl border border-slate-200 bg-slate-50 p-1"
                             />
                             <div>
                               <div className="flex items-center gap-1.5">
@@ -512,7 +584,81 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Tab 2: Orders Log */}
+        {/* Tab 2: Banners Management */}
+        {activeTab === 'banners' && (
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">إدارة صور ونصوص البنرات المتحركة (Carousel Banners)</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  يمكنك إضافة وتعديل صور ونصوص البنرات الرئيسية التي تظهر أعلى المتجر للزبائن.
+                </p>
+              </div>
+
+              <button
+                onClick={() => handleOpenBannerModal()}
+                className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-colors shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة بنر جديد 🎡</span>
+              </button>
+            </div>
+
+            {/* Banners Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {banners.map((ban, index) => (
+                <div
+                  key={ban.id}
+                  className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between"
+                >
+                  <div className="relative h-44 bg-slate-900">
+                    <img
+                      src={ban.image}
+                      alt={ban.title}
+                      className="w-full h-full object-cover filter brightness-[0.75]"
+                    />
+                    <span className="absolute top-3 right-3 bg-amber-400 text-amber-950 font-black text-xs px-3 py-1 rounded-full shadow-xs">
+                      {ban.badge}
+                    </span>
+                    <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-1 rounded-lg">
+                      شريحة {index + 1}
+                    </span>
+                  </div>
+
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-extrabold text-slate-900 text-base mb-1">{ban.title}</h3>
+                      <p className="text-slate-600 text-xs mb-3">{ban.subtitle}</p>
+                      <span className="bg-emerald-50 text-emerald-700 text-[11px] px-2.5 py-1 rounded-lg font-bold inline-block mb-4">
+                        زر الإجراء: {ban.ctaText || 'تصفح العروض الآن 🛒'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
+                      <button
+                        onClick={() => handleOpenBannerModal(ban)}
+                        className="flex-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold py-2 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>تعديل الصور والنص</span>
+                      </button>
+
+                      <button
+                        onClick={() => deleteBanner(ban.id)}
+                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                        title="حذف البنر"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Orders Log */}
         {activeTab === 'orders' && (
           <div>
             <h2 className="text-lg font-bold text-slate-900 mb-4">سجل الطلبات الواردة عبر الواتساب</h2>
@@ -602,7 +748,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Tab 3: Store Settings */}
+        {/* Tab 4: Store Settings */}
         {activeTab === 'settings' && (
           <div className="max-w-xl bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
             <h2 className="text-lg font-bold text-slate-900 mb-2">تعديل رقم واتساب استقبال الطلبات</h2>
@@ -822,6 +968,94 @@ export default function AdminDashboard() {
                   className="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow-sm"
                 >
                   حفظ المنتج مع الوسام 💾
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit Banner Modal */}
+      {isBannerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-emerald-600" />
+              <span>{editingBannerId ? 'تعديل صورة ونص البنر' : 'إضافة بنر متحرك جديد 🎡'}</span>
+            </h3>
+
+            <form onSubmit={handleSaveBanner} className="space-y-3 text-right text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">العنوان الرئيسي للبنر <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  required
+                  placeholder="مثال: عروض التوفير العائلي على جميع الحفاضات"
+                  value={bannerTitle}
+                  onChange={(e) => setBannerTitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">الوصف الفرعي للبنر</label>
+                <input
+                  type="text"
+                  placeholder="مثال: توصيل سريع وحصري لكافة المحافظات"
+                  value={bannerSubtitle}
+                  onChange={(e) => setBannerSubtitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">الوسام الترويجي البارز</label>
+                <input
+                  type="text"
+                  placeholder="مثال: خصم 25% 🍼"
+                  value={bannerBadge}
+                  onChange={(e) => setBannerBadge(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">رابط صورة البنر خلفية (Image URL) <span className="text-rose-500">*</span></label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://..."
+                  value={bannerImage}
+                  onChange={(e) => setBannerImage(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 dir-ltr text-left font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">نص الزر التفاعلي</label>
+                <input
+                  type="text"
+                  placeholder="مثال: تصفح العروض الآن 🛒"
+                  value={bannerCtaText}
+                  onChange={(e) => setBannerCtaText(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setIsBannerModalOpen(false)}
+                  className="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl"
+                >
+                  إلغاء
+                </button>
+
+                <button
+                  type="submit"
+                  className="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow-sm"
+                >
+                  حفظ البنر 💾
                 </button>
               </div>
             </form>
