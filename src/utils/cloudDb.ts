@@ -43,15 +43,18 @@ export function saveLocalProducts(products: Product[]): void {
 }
 
 /**
- * Fetch live products from Cloud DB for all customers worldwide
+ * Fetch live products from Cloud DB with Mobile Cache-Buster (?t=Date.now())
  */
 export async function fetchCloudProducts(): Promise<Product[]> {
   const localList = getLocalProducts();
   try {
-    const res = await fetch(CLOUD_DB_URL, {
+    const freshUrl = `${CLOUD_DB_URL}?cb=${Date.now()}`;
+    const res = await fetch(freshUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
       },
       cache: 'no-store',
     });
@@ -74,11 +77,13 @@ export async function fetchCloudProducts(): Promise<Product[]> {
 export async function saveCloudProducts(products: Product[]): Promise<boolean> {
   saveLocalProducts(products);
   try {
-    const res = await fetch(CLOUD_DB_URL, {
+    const freshUrl = `${CLOUD_DB_URL}?cb=${Date.now()}`;
+    const res = await fetch(freshUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
       body: JSON.stringify(products),
     });
@@ -116,7 +121,11 @@ export function saveLocalBanners(banners: BannerItem[]): void {
 export async function fetchCloudBanners(): Promise<BannerItem[]> {
   const localBanners = getLocalBanners();
   try {
-    const res = await fetch(BANNERS_DB_URL, {
+    const freshUrl = `${BANNERS_DB_URL}?cb=${Date.now()}`;
+    const res = await fetch(freshUrl, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
       cache: 'no-store',
     });
     if (res.ok) {
@@ -133,10 +142,12 @@ export async function fetchCloudBanners(): Promise<BannerItem[]> {
 export async function saveCloudBanners(banners: BannerItem[]): Promise<boolean> {
   saveLocalBanners(banners);
   try {
-    const res = await fetch(BANNERS_DB_URL, {
+    const freshUrl = `${BANNERS_DB_URL}?cb=${Date.now()}`;
+    const res = await fetch(freshUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
       body: JSON.stringify(banners),
     });
@@ -173,7 +184,11 @@ export function saveLocalOrders(orders: Order[]): void {
 export async function fetchCloudOrders(): Promise<Order[]> {
   const localOrders = getLocalOrders();
   try {
-    const res = await fetch(ORDERS_DB_URL, {
+    const freshUrl = `${ORDERS_DB_URL}?cb=${Date.now()}`;
+    const res = await fetch(freshUrl, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
       cache: 'no-store',
     });
     if (res.ok) {
@@ -190,10 +205,12 @@ export async function fetchCloudOrders(): Promise<Order[]> {
 export async function saveCloudOrders(orders: Order[]): Promise<boolean> {
   saveLocalOrders(orders);
   try {
-    const res = await fetch(ORDERS_DB_URL, {
+    const freshUrl = `${ORDERS_DB_URL}?cb=${Date.now()}`;
+    const res = await fetch(freshUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
       body: JSON.stringify(orders),
     });
