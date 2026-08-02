@@ -6,6 +6,44 @@ import { useCart } from '../context/CartContext';
 import { Plus, Eye, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+export function getBadgeColorClass(badge: string): string {
+  if (!badge) return '';
+  const text = badge.trim();
+
+  // Stock Urgency (باقي / متبقي / محدودة) -> Red / Rose Urgent Badge
+  if (text.includes('باقي') || text.includes('متبقي') || text.includes('محدودة')) {
+    return 'bg-gradient-to-r from-rose-600 to-red-500 text-white font-extrabold shadow-sm border border-rose-400/40 animate-pulse';
+  }
+
+  // Discount & Offers (عرض خاص / خصم / توفير) -> Fiery Amber/Orange Badge
+  if (text.includes('عرض') || text.includes('خصم') || text.includes('توفير')) {
+    return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold shadow-sm border border-amber-300/40';
+  }
+
+  // Best Seller (الأكثر مبيعة) -> Flame Gold / Crimson Badge
+  if (text.includes('الأكثر') || text.includes('مبيعة') || text.includes('مطلوب')) {
+    return 'bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white font-black shadow-sm border border-amber-200/50';
+  }
+
+  // New Arrival (جديد / حصري) -> Bright Emerald / Cyan Badge
+  if (text.includes('جديد') || text.includes('حصري')) {
+    return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold shadow-sm border border-emerald-300/40';
+  }
+
+  // Doctor Recommended / Natural (طبي / موصى / طبيعي) -> Medical Blue / Sky Badge
+  if (text.includes('طب') || text.includes('طبيعي') || text.includes('صحيا')) {
+    return 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-extrabold shadow-sm border border-sky-300/40';
+  }
+
+  // Value Packs (مجموعة / 100%) -> Indigo / Violet Badge
+  if (text.includes('مجموعة') || text.includes('قيمة') || text.includes('100%')) {
+    return 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-extrabold shadow-sm border border-indigo-300/40';
+  }
+
+  // Default Fallback: Bright Gold/Amber
+  return 'bg-amber-400 text-amber-950 font-extrabold shadow-2xs border border-amber-300/40';
+}
+
 interface ProductCardProps {
   product: Product;
 }
@@ -27,9 +65,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Top Image Box */}
       <div className="relative aspect-square w-full bg-slate-50/80 overflow-hidden">
         
-        {/* Promotional / Stock Badge (Top Right) */}
+        {/* Promotional / Stock Badge with Dynamic Color according to word meaning */}
         {product.badge && (
-          <span className="absolute top-2 right-2 z-10 bg-amber-400 text-amber-950 font-extrabold text-[9px] sm:text-xs px-2.5 py-0.5 rounded-full shadow-2xs">
+          <span className={`absolute top-2 right-2 z-10 text-[9px] sm:text-xs px-2.5 py-0.5 rounded-full ${getBadgeColorClass(product.badge)}`}>
             {product.badge}
           </span>
         )}

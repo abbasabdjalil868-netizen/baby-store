@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Check } from 'lucide-react';
+import { getBadgeColorClass } from './ProductCard';
 
 export const ProductQuickView: React.FC = () => {
   const { quickViewProduct, setQuickViewProduct, addToCart } = useCart();
@@ -53,7 +54,7 @@ export const ProductQuickView: React.FC = () => {
             {/* Image Section */}
             <div className="relative bg-slate-50 p-6 flex items-center justify-center">
               {quickViewProduct.badge && (
-                <span className="absolute top-4 right-4 z-10 bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-xs">
+                <span className={`absolute top-4 right-4 z-10 text-xs px-3 py-1 rounded-full ${getBadgeColorClass(quickViewProduct.badge)}`}>
                   {quickViewProduct.badge}
                 </span>
               )}
