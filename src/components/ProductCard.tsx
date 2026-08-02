@@ -15,6 +15,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const cartItem = cart.find((item) => item.product.id === product.id);
   const isAlreadyInCart = Boolean(cartItem);
+  const stock = product.stockCount ?? 20;
 
   return (
     <motion.div
@@ -30,6 +31,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {product.badge && (
           <span className="absolute top-2 right-2 z-10 bg-amber-400 text-amber-950 font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-2xs">
             {product.badge}
+          </span>
+        )}
+
+        {/* Stock Urgency Badge (Bottom Left) */}
+        {stock > 0 && stock <= 5 && (
+          <span className="absolute bottom-2 left-2 z-10 bg-rose-600 text-white font-extrabold text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full shadow-xs animate-pulse">
+            🔥 باقي {stock} قطع فقط
+          </span>
+        )}
+
+        {stock === 0 && (
+          <span className="absolute bottom-2 left-2 z-10 bg-slate-800 text-slate-100 font-bold text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+            ❌ نفذت الكمية
           </span>
         )}
 
@@ -90,14 +104,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           <button
+            disabled={stock === 0}
             onClick={() => addToCart(product, 1)}
             className={`w-full xs:w-auto flex items-center justify-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-extrabold transition-all active:scale-95 shadow-2xs ${
-              isAlreadyInCart
+              stock === 0
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : isAlreadyInCart
                 ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
             }`}
           >
-            {isAlreadyInCart ? (
+            {stock === 0 ? (
+              <span>غير متوفر</span>
+            ) : isAlreadyInCart ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-700" />
                 <span>مضاف ({cartItem?.quantity})</span>
