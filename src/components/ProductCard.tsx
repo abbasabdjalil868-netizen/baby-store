@@ -3,7 +3,7 @@
 import React from 'react';
 import { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
-import { Plus, Eye, Check } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function getBadgeColorClass(badge: string): string {
@@ -62,10 +62,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       transition={{ duration: 0.2 }}
       className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative"
     >
-      {/* Top Image Box */}
-      <div className="relative aspect-square w-full bg-slate-50 flex items-center justify-center overflow-hidden p-2 sm:p-3">
-        
-        {/* Promotional / Stock Badge with Dynamic Color */}
+      {/* Top Image Box - Clickable to open Product Details Modal */}
+      <div
+        onClick={() => setQuickViewProduct(product)}
+        className="relative aspect-square w-full bg-slate-50 flex items-center justify-center overflow-hidden p-2 sm:p-3 cursor-pointer"
+      >
+        {/* Promotional / Stock Badge */}
         {product.badge && (
           <span className={`absolute top-2 right-2 z-10 text-[9px] sm:text-xs px-2.5 py-0.5 rounded-full ${getBadgeColorClass(product.badge)}`}>
             {product.badge}
@@ -84,16 +86,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           👶 {product.ageLabel}
         </span>
 
-        {/* Quick View Button (Top Left) */}
-        <button
-          onClick={() => setQuickViewProduct(product)}
-          className="absolute top-2 left-2 z-10 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 hover:bg-white text-slate-600 hover:text-emerald-600 rounded-full flex items-center justify-center shadow-xs transition-all active:scale-90"
-          title="معاينة تفاصيل المنتج"
-        >
-          <Eye className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Image - object-contain ensures full product packaging is visible without any cropping */}
+        {/* Image */}
         <img
           src={product.image}
           alt={product.name}
@@ -104,7 +97,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Body Information */}
       <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
-        <div>
+        <div onClick={() => setQuickViewProduct(product)} className="cursor-pointer">
           {/* Brand & Unit Row */}
           <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1 font-medium">
             <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md font-bold truncate max-w-[90px]">
@@ -113,15 +106,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="truncate">{product.unit}</span>
           </div>
 
-          {/* Title with Fixed Line Height for Uniform Card Alignment */}
-          <h3 className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 min-h-[32px] sm:min-h-[40px] mb-1.5 leading-snug">
+          {/* Title */}
+          <h3 className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 min-h-[32px] sm:min-h-[40px] mb-1.5 leading-snug hover:text-emerald-700 transition-colors">
             {product.name}
           </h3>
         </div>
 
         {/* Price & Add Button Row */}
         <div className="pt-2 border-t border-slate-100 flex flex-col xs:flex-row items-stretch xs:items-center justify-between gap-2 mt-1">
-          <div className="flex flex-col">
+          <div onClick={() => setQuickViewProduct(product)} className="flex flex-col cursor-pointer">
             {product.oldPrice && (
               <span className="text-[10px] text-slate-400 line-through">
                 {product.oldPrice.toLocaleString()} د.ع
@@ -137,7 +130,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           <button
             disabled={stock === 0}
-            onClick={() => addToCart(product, 1)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevents opening modal when clicking Add to Cart
+              addToCart(product, 1);
+            }}
             className={`w-full xs:w-auto flex items-center justify-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-extrabold transition-all active:scale-95 shadow-2xs ${
               stock === 0
                 ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
