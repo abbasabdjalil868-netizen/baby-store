@@ -112,12 +112,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Mount sync: Fetch Cloud products and update state if Cloud DB has valid array
+  // Mount sync: Fetch Cloud products and update state ONLY if Cloud DB has equal/more items
   useEffect(() => {
     async function initCloudSync() {
       setIsSyncingCloud(true);
+      const localList = getLocalProducts();
       const cloudProds = await fetchCloudProducts();
-      if (cloudProds && cloudProds.length > 0) {
+      if (cloudProds && cloudProds.length >= localList.length) {
         setProducts(cloudProds);
       }
       setIsSyncingCloud(false);
@@ -226,7 +227,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 3000);
   };
 
-  // Products CRUD - Saves locally AND to Cloud DB
+  // Products CRUD - Saves locally AND pushes to Cloud DB
   const addProduct = async (newProdData: Omit<Product, 'id' | 'rating' | 'reviewsCount'>) => {
     const newProduct: Product = {
       ...newProdData,
@@ -237,7 +238,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updated = [newProduct, ...products];
     setProducts(updated);
     saveLocalProducts(updated);
-    showToast(`تم حفظ وتثبيت المنتج "${newProduct.name}" بنجاح! ✨`);
+    showToast(`تم حفظ وتثبيت المنتج "${newProduct.name}" بنجاح (${updated.length} منتجات)! ✨`);
     await saveCloudProducts(updated);
   };
 

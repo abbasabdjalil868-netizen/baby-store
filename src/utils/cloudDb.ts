@@ -1,6 +1,6 @@
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 
-const LOCAL_STORAGE_KEY = 'baby_store_persistent_products_v3';
+const LOCAL_STORAGE_KEY = 'baby_store_user_products_final_v1';
 const CLOUD_DB_URL = 'https://baby-care-store-iq-default-rtdb.firebaseio.com/products.json';
 
 /**
@@ -35,7 +35,7 @@ export function saveLocalProducts(products: Product[]): void {
 }
 
 /**
- * Fetch live products from Cloud DB with local fallback
+ * Fetch live products from Cloud DB without dropping local additions
  */
 export async function fetchCloudProducts(): Promise<Product[]> {
   const localList = getLocalProducts();
@@ -46,8 +46,11 @@ export async function fetchCloudProducts(): Promise<Product[]> {
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        saveLocalProducts(data);
-        return data;
+        // Only return cloud data if it has at least as many items as local list
+        if (data.length >= localList.length) {
+          saveLocalProducts(data);
+          return data;
+        }
       }
     }
   } catch (error) {
