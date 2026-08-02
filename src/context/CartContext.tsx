@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 import { CartItem, CustomerDetails, STORE_WHATSAPP_NUMBER as FIXED_PHONE } from '../utils/whatsapp';
+import { fetchCloudProducts, saveCloudProducts } from '../utils/cloudDb';
 
 export interface UserProfile {
   name: string;
@@ -40,6 +41,7 @@ interface CartContextType {
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
   resetProductsToDefault: () => void;
+  isSyncingCloud: boolean;
 
   // Cart Management
   cart: CartItem[];
@@ -91,13 +93,13 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping above 50,000 IQD
 export const DEFAULT_SHIPPING_FEE = 5000; // 5,000 IQD Delivery fee
-const CURRENCY_CACHE_VERSION = 'v_fixed_phone_07725757873';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [storePhone, setStorePhoneState] = useState<string>(FIXED_PHONE);
@@ -109,23 +111,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load state from storage on mount & ALWAYS force fixed phone number
+  // Load live products from Cloud Database on mount for all customers & devices
   useEffect(() => {
-    try {
-      // Force phone reset to 9647725757873
-      localStorage.removeItem('baby_store_phone');
-      setStorePhoneState(FIXED_PHONE);
-
-      const currentCacheVer = localStorage.getItem('baby_store_cache_ver');
-      if (currentCacheVer !== CURRENCY_CACHE_VERSION) {
-        localStorage.removeItem('baby_store_products');
-        localStorage.setItem('baby_store_cache_ver', CURRENCY_CACHE_VERSION);
-        setProducts(DEFAULT_PRODUCTS);
-      } else {
-        const savedProducts = localStorage.getItem('baby_store_products');
-        if (savedProducts) setProducts(JSON.parse(savedProducts));
+    async function initCloudSync() {
+      setIsSyncingCloud(true);
+      const cloudProds = await fetchCloudProducts();
+      if (cloudProds && cloudProds.length > 0) {
+        setProducts(cloudProds);
       }
+      setIsSyncingCloud(false);
+    }
+    initCloudSync();
 
+    try {
       const savedUser = sessionStorage.getItem('baby_store_user');
       if (savedUser) setUser(JSON.parse(savedUser));
 
@@ -139,7 +137,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Sync user state
+  // Sync user session
   const saveUserSession = (usr: UserProfile | null) => {
     setUser(usr);
     try {
@@ -205,12 +203,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sync state changes to storage
   useEffect(() => {
     try {
-      localStorage.setItem('baby_store_products', JSON.stringify(products));
-    } catch (e) {}
-  }, [products]);
-
-  useEffect(() => {
-    try {
       localStorage.setItem('baby_store_cart', JSON.stringify(cart));
     } catch (e) {}
   }, [cart]);
@@ -223,9 +215,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const setStorePhone = (phone: string) => {
     setStorePhoneState(phone);
-    try {
-      localStorage.setItem('baby_store_phone', phone);
-    } catch (e) {}
     showToast('تم تحديث رقم واتساب المتجر بنجاح! 📱');
   };
 
@@ -236,35 +225,42 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 3000);
   };
 
-  // Products CRUD
-  const addProduct = (newProdData: Omit<Product, 'id' | 'rating' | 'reviewsCount'>) => {
+  // Products CRUD - Instantly Syncs to Cloud DB
+  const addProduct = async (newProdData: Omit<Product, 'id' | 'rating' | 'reviewsCount'>) => {
     const newProduct: Product = {
       ...newProdData,
       id: 'p_' + Date.now(),
       rating: 5.0,
       reviewsCount: 1,
     };
-    setProducts((prev) => [newProduct, ...prev]);
-    showToast(`تم إضافة المنتج "${newProduct.name}" بنجاح! ✨`);
+    const updated = [newProduct, ...products];
+    setProducts(updated);
+    showToast(`جاري نشر المنتج "${newProduct.name}" لجميع الزبائن... ☁️`);
+    await saveCloudProducts(updated);
+    showToast(`تم نشر المنتج "${newProduct.name}" وهو ظاهراً لجميع الزبائن الآن! 🎉`);
   };
 
-  const updateProduct = (id: string, updatedFields: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updatedFields } : p))
-    );
-    showToast('تم تحديث بيانات المنتج بنجاح! 📝');
+  const updateProduct = async (id: string, updatedFields: Partial<Product>) => {
+    const updated = products.map((p) => (p.id === id ? { ...p, ...updatedFields } : p));
+    setProducts(updated);
+    showToast('جاري حفظ التعديلات سحابياً... ☁️');
+    await saveCloudProducts(updated);
+    showToast('تم تحديث المنتج لجميع الزبائن بنجاح! 📝');
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+  const deleteProduct = async (id: string) => {
+    const updated = products.filter((p) => p.id !== id);
+    setProducts(updated);
     setCart((prev) => prev.filter((item) => item.product.id !== id));
-    showToast('تم حذف المنتج من المتجر! 🗑️');
+    showToast('جاري إزالة المنتج من السحابة... ☁️');
+    await saveCloudProducts(updated);
+    showToast('تم حذف المنتج نهائياً من متجر كافة الزبائن! 🗑️');
   };
 
-  const resetProductsToDefault = () => {
+  const resetProductsToDefault = async () => {
     setProducts(DEFAULT_PRODUCTS);
-    localStorage.setItem('baby_store_products', JSON.stringify(DEFAULT_PRODUCTS));
-    showToast('تم استعادة كافة المنتجات والأسعار بالدينار العراقي! 🔄');
+    await saveCloudProducts(DEFAULT_PRODUCTS);
+    showToast('تم استعادة كافة المنتجات الافتراضية سحابياً! 🔄');
   };
 
   // Cart Operations
@@ -357,6 +353,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateProduct,
         deleteProduct,
         resetProductsToDefault,
+        isSyncingCloud,
         cart,
         addToCart,
         removeFromCart,
