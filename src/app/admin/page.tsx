@@ -25,6 +25,10 @@ export const BADGE_OPTIONS = [
   { value: 'الأكثر مبيعة', label: '🔥 الأكثر مبيعة' },
   { value: 'عرض خاص', label: '💥 عرض خاص' },
   { value: 'جديد', label: '✨ جديد' },
+  { value: 'باقي 2 قطع فقط', label: '🔥 باقي 2 قطع فقط' },
+  { value: 'باقي 3 قطع فقط', label: '⚡ باقي 3 قطع فقط' },
+  { value: 'باقي 5 قطع فقط', label: '⚠️ باقي 5 قطع فقط' },
+  { value: 'الكمية محدودة جداً', label: '📦 الكمية محدودة جداً' },
   { value: 'موصى به طبياً', label: '👨‍⚕️ موصى به طبياً' },
   { value: 'توفير عائلي', label: '🏷️ توفير عائلي' },
   { value: '100% طبيعي', label: '🌱 100% طبيعي' },
@@ -679,7 +683,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    placeholder="اكتب الوسام هنا (مثال: خصم 30%، باقة شهرية...)"
+                    placeholder="اكتب الوسام هنا (مثال: باقي 2 قطع فقط، خصم 30%...)"
                     value={customBadge}
                     onChange={(e) => setCustomBadge(e.target.value)}
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-1.5 text-slate-800 font-bold mt-1"

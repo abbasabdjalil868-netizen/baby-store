@@ -27,20 +27,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Top Image Box */}
       <div className="relative aspect-square w-full bg-slate-50/80 overflow-hidden">
         
-        {/* Special Offer Badge (Top Right) */}
+        {/* Promotional / Stock Badge (Top Right) */}
         {product.badge && (
-          <span className="absolute top-2 right-2 z-10 bg-amber-400 text-amber-950 font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-2xs">
+          <span className="absolute top-2 right-2 z-10 bg-amber-400 text-amber-950 font-extrabold text-[9px] sm:text-xs px-2.5 py-0.5 rounded-full shadow-2xs">
             {product.badge}
           </span>
         )}
 
-        {/* Stock Urgency Badge (Bottom Left) */}
-        {stock > 0 && stock <= 5 && (
-          <span className="absolute bottom-2 left-2 z-10 bg-rose-600 text-white font-extrabold text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full shadow-xs animate-pulse">
-            🔥 باقي {stock} قطع فقط
-          </span>
-        )}
-
+        {/* Out of Stock overlay tag if stock is 0 */}
         {stock === 0 && (
           <span className="absolute bottom-2 left-2 z-10 bg-slate-800 text-slate-100 font-bold text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full shadow-xs">
             ❌ نفذت الكمية
