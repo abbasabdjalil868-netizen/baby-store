@@ -300,20 +300,51 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCart([]);
   };
 
-  // Order Logging
+  // Automatic Stock Deduction Helper
+  const deductStockForOrder = async (orderedItems: CartItem[]) => {
+    setProducts((currentProducts) => {
+      const updatedProds = currentProducts.map((p) => {
+        const orderedItem = orderedItems.find((item) => item.product.id === p.id);
+        if (orderedItem) {
+          const currentStock = p.stockCount ?? 20;
+          const newStock = Math.max(0, currentStock - orderedItem.quantity);
+          return {
+            ...p,
+            stockCount: newStock,
+            inStock: newStock > 0,
+          };
+        }
+        return p;
+      });
+
+      // Save updated stock state locally & push to Cloud DB
+      saveLocalProducts(updatedProds);
+      saveCloudProducts(updatedProds);
+      return updatedProds;
+    });
+  };
+
+  // Order Logging with Automatic Real-Time Stock Deduction
   const addOrder = (customer: CustomerDetails): string => {
     const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+    const orderedItems = [...cart];
+
     const newOrder: Order = {
       id: orderId,
       createdAt: new Date().toISOString(),
       customer,
-      items: [...cart],
+      items: orderedItems,
       subtotal,
       shippingFee,
       totalPrice,
       status: 'pending',
     };
+    
     setOrders((prev) => [newOrder, ...prev]);
+
+    // Automatically deduct stock for ordered items
+    deductStockForOrder(orderedItems);
+
     return orderId;
   };
 
