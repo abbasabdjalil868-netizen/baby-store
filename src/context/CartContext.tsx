@@ -257,7 +257,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+    setCart((prev) => prev.filter((item) => item.product.id !== id));
     showToast('تم حذف المنتج من المتجر! 🗑️');
   };
 
