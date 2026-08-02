@@ -23,6 +23,7 @@ import {
   Printer,
   X,
   CheckCircle,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -56,6 +57,7 @@ export default function AdminDashboard() {
     orders,
     updateOrderStatus,
     deleteOrder,
+    refreshOrders,
     storePhone,
     setStorePhone,
     loginAdmin,
@@ -725,17 +727,27 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Tab 3: Orders Log with Printable Invoice Button */}
+        {/* Tab 3: Orders Log with Printable Invoice & Cloud Sync Button */}
         {activeTab === 'orders' && (
           <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-4">سجل الطلبات الواردة عبر الواتساب</h2>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg font-bold text-slate-900">سجل الطلبات الواردة عبر الواتساب</h2>
+
+              <button
+                onClick={() => refreshOrders()}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>تحديث الطلبات سحابياً 🔄</span>
+              </button>
+            </div>
 
             {orders.length === 0 ? (
               <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 max-w-md mx-auto my-8">
                 <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <h3 className="font-bold text-slate-800 text-base mb-1">لا توجد طلبات مسجلة حتى الآن</h3>
                 <p className="text-slate-500 text-xs">
-                  عندما يرسل الزبائن طلباتهم عبر الواتساب ستظهر تفاصيلها هنا تلقائياً.
+                  عندما يرسل الزبائن طلباتهم عبر الواتساب ستظهر تفاصيلها هنا تلقائياً وفي الحساب السحابي المباشر.
                 </p>
               </div>
             ) : (

@@ -13,6 +13,10 @@ import {
   saveCloudBanners,
   getLocalBanners,
   saveLocalBanners,
+  fetchCloudOrders,
+  saveCloudOrders,
+  getLocalOrders,
+  saveLocalOrders,
 } from '../utils/cloudDb';
 
 export interface UserProfile {
@@ -82,11 +86,12 @@ interface CartContextType {
   quickViewProduct: Product | null;
   setQuickViewProduct: (product: Product | null) => void;
   
-  // Orders Management
+  // Orders Management (Synced Cloud Orders)
   orders: Order[];
-  addOrder: (customer: CustomerDetails) => string;
+  addOrder: (customer: CustomerDetails) => Promise<string>;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   deleteOrder: (orderId: string) => void;
+  refreshOrders: () => Promise<void>;
 
   // Admin Store Settings
   storePhone: string;
@@ -116,9 +121,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [products, setProducts] = useState<Product[]>(getLocalProducts);
   const [banners, setBanners] = useState<BannerItem[]>(getLocalBanners);
+  const [orders, setOrders] = useState<Order[]>(getLocalOrders);
   const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [storePhone, setStorePhoneState] = useState<string>(FIXED_PHONE);
 
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
@@ -128,7 +133,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Mount sync: Fetch Cloud products & banners
+  // Mount sync: Fetch Cloud products, banners & customer orders
   useEffect(() => {
     async function initCloudSync() {
       setIsSyncingCloud(true);
@@ -142,6 +147,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (cloudBanners && cloudBanners.length > 0) {
         setBanners(cloudBanners);
       }
+
+      const cloudOrders = await fetchCloudOrders();
+      if (cloudOrders) {
+        setOrders(cloudOrders);
+      }
+
       setIsSyncingCloud(false);
     }
     initCloudSync();
@@ -152,12 +163,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const savedCart = localStorage.getItem('baby_store_cart');
       if (savedCart) setCart(JSON.parse(savedCart));
-
-      const savedOrders = localStorage.getItem('baby_store_orders');
-      if (savedOrders) setOrders(JSON.parse(savedOrders));
     } catch (e) {
       console.error('Failed to load storage', e);
     }
+  }, []);
+
+  // Poll Cloud Orders every 15 seconds so Admin gets live order updates automatically
+  useEffect(() => {
+    const orderInterval = setInterval(async () => {
+      const liveOrders = await fetchCloudOrders();
+      if (liveOrders) {
+        setOrders(liveOrders);
+      }
+    }, 15000);
+    return () => clearInterval(orderInterval);
   }, []);
 
   // Sync user session
@@ -229,12 +248,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('baby_store_cart', JSON.stringify(cart));
     } catch (e) {}
   }, [cart]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('baby_store_orders', JSON.stringify(orders));
-    } catch (e) {}
-  }, [orders]);
 
   const setStorePhone = (phone: string) => {
     setStorePhoneState(phone);
@@ -373,8 +386,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Order Logging with Automatic Real-Time Stock Deduction
-  const addOrder = (customer: CustomerDetails): string => {
+  // Global Real-Time Cloud Order Logging
+  const addOrder = async (customer: CustomerDetails): Promise<string> => {
     const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
     const orderedItems = [...cart];
 
@@ -388,25 +401,45 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       totalPrice,
       status: 'pending',
     };
-    
-    setOrders((prev) => [newOrder, ...prev]);
 
-    // Automatically deduct stock for ordered items
+    // 1. Fetch freshest orders from Cloud DB first to avoid overwriting peer orders
+    const latestCloudOrders = await fetchCloudOrders();
+    const updatedOrders = [newOrder, ...latestCloudOrders];
+
+    setOrders(updatedOrders);
+    saveLocalOrders(updatedOrders);
+
+    // 2. Save globally to Cloud DB so Abbas sees it live in /admin on any device
+    await saveCloudOrders(updatedOrders);
+
+    // 3. Automatically deduct stock for ordered items
     deductStockForOrder(orderedItems);
 
     return orderId;
   };
 
-  const updateOrderStatus = (orderId: string, status: Order['status']) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
+  const updateOrderStatus = async (orderId: string, status: Order['status']) => {
+    const updated = orders.map((o) => (o.id === orderId ? { ...o, status } : o));
+    setOrders(updated);
+    saveLocalOrders(updated);
+    await saveCloudOrders(updated);
     showToast('تم تحديث حالة الطلب بنجاح! 📦');
   };
 
-  const deleteOrder = (orderId: string) => {
-    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+  const deleteOrder = async (orderId: string) => {
+    const updated = orders.filter((o) => o.id !== orderId);
+    setOrders(updated);
+    saveLocalOrders(updated);
+    await saveCloudOrders(updated);
     showToast('تم حذف الطلب من السجل!');
+  };
+
+  const refreshOrders = async () => {
+    const liveOrders = await fetchCloudOrders();
+    if (liveOrders) {
+      setOrders(liveOrders);
+      showToast('تم تحديث الطلبات من السحابة بنجاح! 🔄');
+    }
   };
 
   const openCart = () => setIsCartOpen(true);
@@ -462,6 +495,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addOrder,
         updateOrderStatus,
         deleteOrder,
+        refreshOrders,
         storePhone: FIXED_PHONE,
         setStorePhone,
         totalItems,
