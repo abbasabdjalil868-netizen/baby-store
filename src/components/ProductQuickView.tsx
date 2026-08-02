@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Plus, Minus, Check, MessageCircle } from 'lucide-react';
+import { X, Star, Plus, Minus, Check } from 'lucide-react';
 
 export const ProductQuickView: React.FC = () => {
-  const { quickViewProduct, setQuickViewProduct, addToCart, storePhone } = useCart();
+  const { quickViewProduct, setQuickViewProduct, addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
   if (!quickViewProduct) return null;
@@ -20,10 +20,6 @@ export const ProductQuickView: React.FC = () => {
     addToCart(quickViewProduct, quantity);
     handleClose();
   };
-
-  const directWhatsAppUrl = `https://wa.me/${storePhone}?text=${encodeURIComponent(
-    `السلام عليكم، أود الطلب المباشر للمنتج:\n• *${quickViewProduct.name}*\n• الكمية: ${quantity}\n• السعر الإجمالي: ${(quickViewProduct.price * quantity).toLocaleString()} د.ع`
-  )}`;
 
   return (
     <AnimatePresence>
@@ -146,21 +142,11 @@ export const ProductQuickView: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-3">
                   <button
                     onClick={handleAddToCart}
-                    className="w-full sm:flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3 px-4 rounded-2xl shadow-md text-sm transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-md text-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>إضافة للسلة</span>
+                    <span>إضافة المنتج للسلة 🛒</span>
                   </button>
-
-                  <a
-                    href={directWhatsAppUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:w-auto bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-3 px-4 rounded-2xl text-sm transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle className="w-4 h-4 text-emerald-600 fill-emerald-600/20" />
-                    <span>طلب مباشر بالواتساب</span>
-                  </a>
                 </div>
               </div>
 
