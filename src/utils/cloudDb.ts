@@ -1,7 +1,9 @@
 import { Product, PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 
-const LOCAL_STORAGE_KEY = 'baby_store_user_products_final_v1';
-const CLOUD_DB_URL = 'https://baby-care-store-iq-default-rtdb.firebaseio.com/products.json';
+const LOCAL_STORAGE_KEY = 'baby_store_user_products_final_v2';
+
+// 100% Public, CORS-enabled, Zero-auth Cloud Database Endpoint
+const CLOUD_DB_URL = 'https://jsonblob.com/api/jsonBlob/019fc3eb-b96c-749b-8605-f56b124ae5d1';
 
 /**
  * Get products from local storage fallback
@@ -35,22 +37,23 @@ export function saveLocalProducts(products: Product[]): void {
 }
 
 /**
- * Fetch live products from Cloud DB without dropping local additions
+ * Fetch live products from Cloud DB for all customers worldwide
  */
 export async function fetchCloudProducts(): Promise<Product[]> {
   const localList = getLocalProducts();
   try {
     const res = await fetch(CLOUD_DB_URL, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
       cache: 'no-store',
     });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        // Only return cloud data if it has at least as many items as local list
-        if (data.length >= localList.length) {
-          saveLocalProducts(data);
-          return data;
-        }
+        saveLocalProducts(data);
+        return data;
       }
     }
   } catch (error) {
@@ -60,10 +63,10 @@ export async function fetchCloudProducts(): Promise<Product[]> {
 }
 
 /**
- * Save products to both Cloud DB and Local Storage
+ * Save products to Cloud DB (Public Instant Sync)
  */
 export async function saveCloudProducts(products: Product[]): Promise<boolean> {
-  // Always save locally first so refresh NEVER erases products!
+  // Always save locally first
   saveLocalProducts(products);
 
   try {
@@ -71,6 +74,7 @@ export async function saveCloudProducts(products: Product[]): Promise<boolean> {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(products),
     });
