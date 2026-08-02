@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Plus, Minus, Check } from 'lucide-react';
+import { X, Plus, Minus, Check } from 'lucide-react';
 
 export const ProductQuickView: React.FC = () => {
   const { quickViewProduct, setQuickViewProduct, addToCart } = useCart();
@@ -69,7 +69,7 @@ export const ProductQuickView: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between text-xs text-slate-500 mb-1 font-semibold">
                   <span>{quickViewProduct.brand}</span>
-                  <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full">
+                  <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full font-bold">
                     👶 {quickViewProduct.ageLabel}
                   </span>
                 </div>
@@ -77,15 +77,6 @@ export const ProductQuickView: React.FC = () => {
                 <h2 className="text-xl font-extrabold text-slate-900 mb-3 leading-snug">
                   {quickViewProduct.name}
                 </h2>
-
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center text-amber-400">
-                    <Star className="w-4 h-4 fill-current" />
-                  </div>
-                  <span className="text-sm font-bold text-slate-800">{quickViewProduct.rating}</span>
-                  <span className="text-xs text-slate-400">({quickViewProduct.reviewsCount} تقييم موثوق)</span>
-                </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2 mb-4 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
@@ -97,7 +88,7 @@ export const ProductQuickView: React.FC = () => {
                       {(quickViewProduct.oldPrice * quantity).toLocaleString()} د.ع
                     </span>
                   )}
-                  <span className="text-xs text-slate-500 mr-auto">({quickViewProduct.unit})</span>
+                  <span className="text-xs text-slate-500 mr-auto font-bold">({quickViewProduct.unit})</span>
                 </div>
 
                 {/* Description */}

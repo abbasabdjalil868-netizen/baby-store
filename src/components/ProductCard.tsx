@@ -3,7 +3,7 @@
 import React from 'react';
 import { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
-import { Star, Plus, Eye, Check, ShoppingBag } from 'lucide-react';
+import { Plus, Eye, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ProductCardProps {
@@ -71,15 +71,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <h3 className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 min-h-[32px] sm:min-h-[40px] mb-1.5 leading-snug">
             {product.name}
           </h3>
-
-          {/* Star Rating */}
-          <div className="flex items-center gap-1 mb-2">
-            <div className="flex items-center text-amber-400">
-              <Star className="w-3 h-3 fill-current" />
-            </div>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-700">{product.rating}</span>
-            <span className="text-[9px] text-slate-400">({product.reviewsCount})</span>
-          </div>
         </div>
 
         {/* Price & Add Button Row */}
