@@ -19,6 +19,7 @@ import {
   Tag,
   Sparkles,
   Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -121,6 +122,23 @@ export default function AdminDashboard() {
     const ageObj = AGE_GROUPS.find((a) => a.id === ageId);
     if (ageObj) {
       setAgeLabel(ageObj.label);
+    }
+  };
+
+  // File to Base64 image loader
+  const handleImageFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    targetSetter: (url: string) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          targetSetter(reader.result.toString());
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -931,16 +949,31 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Product Image Field with Direct File Upload Picker */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">رابط صورة المنتج</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://..."
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 dir-ltr text-left"
-                />
+                <label className="block font-bold text-slate-700 mb-1">
+                  صورة المنتج (رابط أونلاين أو رفع مباشر من الاستوديو) <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="https://... أو اختر من استوديو الهاتف"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 dir-ltr text-left"
+                  />
+                  <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 cursor-pointer shrink-0 shadow-xs">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>📁 الاستوديو</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageFileUpload(e, setImage)}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -1019,16 +1052,31 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Banner Image Field with Direct File Upload Picker */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">رابط صورة البنر خلفية (Image URL) <span className="text-rose-500">*</span></label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://..."
-                  value={bannerImage}
-                  onChange={(e) => setBannerImage(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 dir-ltr text-left font-mono"
-                />
+                <label className="block font-bold text-slate-700 mb-1">
+                  رابط صورة البنر خلفية (أو رفع من الاستوديو) <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="https://... أو اختر من الاستوديو"
+                    value={bannerImage}
+                    onChange={(e) => setBannerImage(e.target.value)}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 dir-ltr text-left"
+                  />
+                  <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 cursor-pointer shrink-0 shadow-xs">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>📁 الاستوديو</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageFileUpload(e, setBannerImage)}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div>
