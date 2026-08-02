@@ -16,8 +16,21 @@ import {
   ShieldAlert,
   Milk,
   Tag,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
+
+export const BADGE_OPTIONS = [
+  { value: '', label: 'بدون وسام ترويجي' },
+  { value: 'الأكثر مبيعة', label: '🔥 الأكثر مبيعة' },
+  { value: 'عرض خاص', label: '💥 عرض خاص' },
+  { value: 'جديد', label: '✨ جديد' },
+  { value: 'موصى به طبياً', label: '👨‍⚕️ موصى به طبياً' },
+  { value: 'توفير عائلي', label: '🏷️ توفير عائلي' },
+  { value: '100% طبيعي', label: '🌱 100% طبيعي' },
+  { value: 'مجموعة قيمة', label: '🎁 مجموعة قيمة' },
+  { value: 'خصم خاص', label: '⚡ خصم خاص' },
+];
 
 export default function AdminDashboard() {
   const {
@@ -59,6 +72,7 @@ export default function AdminDashboard() {
   const [description, setDescription] = useState('');
   const [unit, setUnit] = useState('علبة 400 غرام');
   const [badge, setBadge] = useState('');
+  const [customBadge, setCustomBadge] = useState('');
 
   // Phone settings field
   const [phoneInput, setPhoneInput] = useState(storePhone);
@@ -176,7 +190,14 @@ export default function AdminDashboard() {
       setImage(prod.image);
       setDescription(prod.description);
       setUnit(prod.unit);
-      setBadge(prod.badge || '');
+      const isPredefinedBadge = BADGE_OPTIONS.some(b => b.value === prod.badge);
+      if (isPredefinedBadge) {
+        setBadge(prod.badge || '');
+        setCustomBadge('');
+      } else {
+        setBadge('custom');
+        setCustomBadge(prod.badge || '');
+      }
     } else {
       setEditingProductId(null);
       setName('');
@@ -192,6 +213,7 @@ export default function AdminDashboard() {
       setDescription('');
       setUnit('علبة 400 غرام');
       setBadge('');
+      setCustomBadge('');
     }
     setIsAddModalOpen(true);
   };
@@ -201,6 +223,7 @@ export default function AdminDashboard() {
     if (!name || !price || !image) return;
 
     const inStockStatus = stockCount > 0;
+    const finalBadge = badge === 'custom' ? customBadge.trim() : badge;
 
     if (editingProductId) {
       updateProduct(editingProductId, {
@@ -217,7 +240,7 @@ export default function AdminDashboard() {
         image,
         description,
         unit,
-        badge: badge || undefined,
+        badge: finalBadge || undefined,
       });
     } else {
       addProduct({
@@ -235,7 +258,7 @@ export default function AdminDashboard() {
         description,
         features: ['منتج عالي الجودة لسلامة طفلك', 'شحن وتغليف طبي معتمد'],
         unit,
-        badge: badge || undefined,
+        badge: finalBadge || undefined,
       });
     }
 
@@ -391,7 +414,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-right text-xs">
                   <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
                     <tr>
-                      <th className="p-4">المنتج</th>
+                      <th className="p-4">المنتج والوسام</th>
                       <th className="p-4">قسم المنتج والعمر</th>
                       <th className="p-4">السعر</th>
                       <th className="p-4">عدد القطع بالمخزن 📦</th>
@@ -409,7 +432,14 @@ export default function AdminDashboard() {
                               className="w-12 h-12 object-cover rounded-xl border border-slate-200 bg-slate-50"
                             />
                             <div>
-                              <h4 className="font-bold text-slate-800 line-clamp-1">{prod.name}</h4>
+                              <div className="flex items-center gap-1.5">
+                                <h4 className="font-bold text-slate-800 line-clamp-1">{prod.name}</h4>
+                                {prod.badge && (
+                                  <span className="bg-amber-400 text-amber-950 font-extrabold text-[9px] px-2 py-0.5 rounded-full shrink-0">
+                                    {prod.badge}
+                                  </span>
+                                )}
+                              </div>
                               <span className="text-[10px] text-slate-400">{prod.brand} • {prod.unit}</span>
                             </div>
                           </div>
@@ -455,7 +485,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleOpenAddModal(prod)}
                               className="p-2 text-slate-500 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 rounded-xl transition-colors"
-                              title="تعديل المنتج والقسم والعدد"
+                              title="تعديل المنتج والوسام والتفاصيل"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
@@ -609,7 +639,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
             <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Tag className="w-5 h-5 text-emerald-600" />
-              <span>{editingProductId ? 'تعديل بيانات والكمية والقسم للمنتج' : 'إضافة منتج جديد وتحديد القسم'}</span>
+              <span>{editingProductId ? 'تعديل المنتج والوسام والتفاصيل' : 'إضافة منتج جديد مع وسام ترويجي'}</span>
             </h3>
 
             <form onSubmit={handleSaveProduct} className="space-y-3 text-right text-xs">
@@ -621,14 +651,46 @@ export default function AdminDashboard() {
                   placeholder="مثال: حليب أبتاميل 400غ"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold"
                 />
+              </div>
+
+              {/* Promotional Badge Selector */}
+              <div className="bg-amber-50/80 p-3 rounded-2xl border border-amber-200 space-y-2">
+                <label className="block font-bold text-amber-950 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-600" />
+                  <span>الوسام الترويجي فوق المنتج (Badge)</span>
+                </label>
+                
+                <select
+                  value={badge}
+                  onChange={(e) => setBadge(e.target.value)}
+                  className="w-full bg-white border border-amber-300 font-bold rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-amber-500"
+                >
+                  {BADGE_OPTIONS.map((b) => (
+                    <option key={b.value} value={b.value}>
+                      {b.label}
+                    </option>
+                  ))}
+                  <option value="custom">✏️ كتابة وسام ترويجي مخصص...</option>
+                </select>
+
+                {badge === 'custom' && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="اكتب الوسام هنا (مثال: خصم 30%، باقة شهرية...)"
+                    value={customBadge}
+                    onChange={(e) => setCustomBadge(e.target.value)}
+                    className="w-full bg-white border border-amber-300 rounded-xl px-3 py-1.5 text-slate-800 font-bold mt-1"
+                  />
+                )}
               </div>
 
               {/* Category & Age Group Selectors */}
               <div className="grid grid-cols-2 gap-3 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
                 <div>
-                  <label className="block font-bold text-emerald-900 mb-1">اختيار قسم المنتج 🏷️ <span className="text-rose-500">*</span></label>
+                  <label className="block font-bold text-emerald-900 mb-1">قسم المنتج 🏷️ <span className="text-rose-500">*</span></label>
                   <select
                     value={category}
                     onChange={(e) => handleCategorySelect(e.target.value as Product['category'])}
@@ -643,7 +705,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-emerald-900 mb-1">الفئة العمرية المناسبة 👶 <span className="text-rose-500">*</span></label>
+                  <label className="block font-bold text-emerald-900 mb-1">الفئة العمرية 👶 <span className="text-rose-500">*</span></label>
                   <select
                     value={ageGroup}
                     onChange={(e) => handleAgeGroupSelect(e.target.value as Product['ageGroup'])}
@@ -755,7 +817,7 @@ export default function AdminDashboard() {
                   type="submit"
                   className="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow-sm"
                 >
-                  حفظ المنتج بالقسم 💾
+                  حفظ المنتج مع الوسام 💾
                 </button>
               </div>
             </form>
