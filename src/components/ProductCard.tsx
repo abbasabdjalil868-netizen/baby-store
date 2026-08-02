@@ -63,9 +63,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative"
     >
       {/* Top Image Box */}
-      <div className="relative aspect-square w-full bg-slate-50/80 overflow-hidden">
+      <div className="relative aspect-square w-full bg-slate-50 flex items-center justify-center overflow-hidden p-2 sm:p-3">
         
-        {/* Promotional / Stock Badge with Dynamic Color according to word meaning */}
+        {/* Promotional / Stock Badge with Dynamic Color */}
         {product.badge && (
           <span className={`absolute top-2 right-2 z-10 text-[9px] sm:text-xs px-2.5 py-0.5 rounded-full ${getBadgeColorClass(product.badge)}`}>
             {product.badge}
@@ -93,11 +93,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Eye className="w-3.5 h-3.5" />
         </button>
 
-        {/* Image */}
+        {/* Image - object-contain ensures full product packaging is visible without any cropping */}
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
       </div>
