@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { generateWhatsAppOrderUrl } from '../utils/whatsapp';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, ShoppingBag, Truck, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, Truck, CheckCircle2, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -30,10 +30,11 @@ export const CartDrawer: React.FC = () => {
   const [customerAddress, setCustomerAddress] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
   const [formError, setFormError] = useState('');
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
   if (!isCartOpen) return null;
 
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim()) {
       setFormError('يرجى ملء جميع الحقول المطلوبة (الاسم، الهاتف، العنوان)');
@@ -41,6 +42,7 @@ export const CartDrawer: React.FC = () => {
     }
 
     setFormError('');
+    setIsSubmittingOrder(true);
 
     const customerDetails = {
       name: customerName,
@@ -50,29 +52,35 @@ export const CartDrawer: React.FC = () => {
       paymentMethod: 'cod' as const,
     };
 
-    // 1. Log order to store state
-    addOrder(customerDetails);
+    try {
+      // 1. AWAIT saving the order to Cloud DB BEFORE redirecting to WhatsApp
+      await addOrder(customerDetails);
 
-    // 2. Build WhatsApp URL
-    const url = generateWhatsAppOrderUrl(
-      cart,
-      customerDetails,
-      subtotal,
-      shippingFee,
-      totalPrice,
-      storePhone
-    );
+      // 2. Build WhatsApp URL
+      const url = generateWhatsAppOrderUrl(
+        cart,
+        customerDetails,
+        subtotal,
+        shippingFee,
+        totalPrice,
+        storePhone
+      );
 
-    // 3. Clear Cart completely after sending order
-    clearCart();
+      // 3. Clear Cart completely after sending order
+      clearCart();
 
-    // 4. Open WhatsApp
-    window.open(url, '_blank');
+      // 4. Open WhatsApp
+      window.open(url, '_blank');
 
-    // 5. Toast notification & Reset Drawer state
-    showToast('تم إرسال الطلب للواتساب وتفريغ السلة بنجاح! 🛒✨');
-    setStep('cart');
-    closeCart();
+      // 5. Toast notification & Reset Drawer state
+      showToast('تم تسجيل الطلب وإرساله للواتساب بنجاح! 🛒✨');
+      setStep('cart');
+      closeCart();
+    } catch (err) {
+      console.error('Order submission error:', err);
+    } finally {
+      setIsSubmittingOrder(false);
+    }
   };
 
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
@@ -333,18 +341,29 @@ export const CartDrawer: React.FC = () => {
                   <div className="flex gap-2">
                     <button
                       type="button"
+                      disabled={isSubmittingOrder}
                       onClick={() => setStep('cart')}
-                      className="bg-white border border-slate-200 text-slate-600 font-bold py-3 px-4 rounded-2xl text-xs hover:bg-slate-100"
+                      className="bg-white border border-slate-200 text-slate-600 font-bold py-3 px-4 rounded-2xl text-xs hover:bg-slate-100 disabled:opacity-50"
                     >
                       رجوع للسلة
                     </button>
                     <button
                       type="submit"
+                      disabled={isSubmittingOrder}
                       form="checkout-form"
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-md text-sm transition-all flex items-center justify-center gap-2"
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-md text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>تأكيد وإرسال للواتساب 📱</span>
+                      {isSubmittingOrder ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>جاري التسجيل أونلاين...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>تأكيد وإرسال للواتساب 📱</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 )}

@@ -509,7 +509,10 @@ export default function AdminDashboard() {
           </button>
 
           <button
-            onClick={() => setActiveTab('orders')}
+            onClick={() => {
+              setActiveTab('orders');
+              refreshOrders();
+            }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 relative ${
               activeTab === 'orders'
                 ? 'bg-emerald-600 text-white shadow-sm'
