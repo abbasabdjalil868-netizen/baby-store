@@ -57,11 +57,12 @@ interface CartContextType {
   resetProductsToDefault: () => void;
   isSyncingCloud: boolean;
 
-  // Banners Management
+  // Banners Management (Synced Cloud Banners)
   banners: BannerItem[];
-  addBanner: (banner: Omit<BannerItem, 'id'>) => void;
-  updateBanner: (id: string, banner: Partial<BannerItem>) => void;
-  deleteBanner: (id: string) => void;
+  addBanner: (banner: Omit<BannerItem, 'id'>) => Promise<void>;
+  updateBanner: (id: string, banner: Partial<BannerItem>) => Promise<void>;
+  deleteBanner: (id: string) => Promise<void>;
+  refreshBanners: () => Promise<void>;
 
   // Cart Management
   cart: CartItem[];
@@ -168,15 +169,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Poll Cloud Orders every 15 seconds so Admin gets live order updates automatically
+  // Poll Cloud Banners & Orders every 15 seconds so all phones display identical banners & orders
   useEffect(() => {
-    const orderInterval = setInterval(async () => {
+    const cloudPollInterval = setInterval(async () => {
       const liveOrders = await fetchCloudOrders();
       if (liveOrders) {
         setOrders(liveOrders);
       }
+
+      const liveBanners = await fetchCloudBanners();
+      if (liveBanners && liveBanners.length > 0) {
+        setBanners(liveBanners);
+      }
     }, 15000);
-    return () => clearInterval(orderInterval);
+    return () => clearInterval(cloudPollInterval);
   }, []);
 
   // Sync user session
@@ -300,16 +306,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('تم استعادة كافة المنتجات الافتراضية سحابياً! 🔄');
   };
 
-  // Banners CRUD
+  // Banners CRUD - Synced Cloud Saves
   const addBanner = async (bannerData: Omit<BannerItem, 'id'>) => {
     const newBanner: BannerItem = {
       ...bannerData,
       id: 'b_' + Date.now(),
     };
-    const updated = [...banners, newBanner];
+    const latestCloudBanners = await fetchCloudBanners();
+    const updated = [...latestCloudBanners, newBanner];
     setBanners(updated);
     saveLocalBanners(updated);
-    showToast('تم إضافة البنر الإعلاني الجديد بنجاح! 🎡');
+    showToast('تم حفظ البنر الجديد سحابياً لجميع الهواتف! 🎡✨');
     await saveCloudBanners(updated);
   };
 
@@ -317,7 +324,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updated = banners.map((b) => (b.id === id ? { ...b, ...bannerData } : b));
     setBanners(updated);
     saveLocalBanners(updated);
-    showToast('تم تحديث البنر الإعلاني بنجاح! 🎡');
+    showToast('تم تحديث البنر سحابياً لجميع الهواتف! 🎡');
     await saveCloudBanners(updated);
   };
 
@@ -325,8 +332,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updated = banners.filter((b) => b.id !== id);
     setBanners(updated);
     saveLocalBanners(updated);
-    showToast('تم حذف البنر الإعلاني بنجاح! 🗑️');
+    showToast('تم حذف البنر سحابياً! 🗑️');
     await saveCloudBanners(updated);
+  };
+
+  const refreshBanners = async () => {
+    const liveBanners = await fetchCloudBanners();
+    if (liveBanners && liveBanners.length > 0) {
+      setBanners(liveBanners);
+      showToast('تم تحديث البنرات من السحابة بنجاح! 🎡');
+    }
   };
 
   // Cart Operations
@@ -474,6 +489,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addBanner,
         updateBanner,
         deleteBanner,
+        refreshBanners,
         cart,
         addToCart,
         removeFromCart,
