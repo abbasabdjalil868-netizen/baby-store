@@ -3,7 +3,7 @@ import { BannerItem, DEFAULT_BANNERS } from '../data/banners';
 import { Order } from '../context/CartContext';
 
 const LOCAL_STORAGE_KEY = 'baby_store_user_products_final_v2';
-const BANNERS_STORAGE_KEY = 'baby_store_user_banners_v1';
+const BANNERS_STORAGE_KEY = 'baby_store_user_banners_v2';
 const ORDERS_STORAGE_KEY = 'baby_store_orders_v1';
 
 // 100% Public, CORS-enabled, Zero-auth Cloud Database Endpoints
@@ -43,7 +43,7 @@ export function saveLocalProducts(products: Product[]): void {
 }
 
 /**
- * Fetch live products from Cloud DB with Mobile Cache-Buster (?t=Date.now())
+ * Fetch live products from Cloud DB with Mobile Cache-Buster (?cb=Date.now())
  */
 export async function fetchCloudProducts(): Promise<Product[]> {
   const localList = getLocalProducts();
@@ -95,7 +95,7 @@ export async function saveCloudProducts(products: Product[]): Promise<boolean> {
 }
 
 /**
- * Banners Persistence
+ * Banners Persistence - Cloud First Strategy
  */
 export function getLocalBanners(): BannerItem[] {
   if (typeof window === 'undefined') return DEFAULT_BANNERS;
@@ -119,12 +119,12 @@ export function saveLocalBanners(banners: BannerItem[]): void {
 }
 
 export async function fetchCloudBanners(): Promise<BannerItem[]> {
-  const localBanners = getLocalBanners();
   try {
     const freshUrl = `${BANNERS_DB_URL}?cb=${Date.now()}`;
     const res = await fetch(freshUrl, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
       },
       cache: 'no-store',
     });
@@ -135,8 +135,10 @@ export async function fetchCloudBanners(): Promise<BannerItem[]> {
         return data;
       }
     }
-  } catch (e) {}
-  return localBanners;
+  } catch (e) {
+    console.error('Fetch Cloud Banners Error', e);
+  }
+  return getLocalBanners();
 }
 
 export async function saveCloudBanners(banners: BannerItem[]): Promise<boolean> {
@@ -153,6 +155,7 @@ export async function saveCloudBanners(banners: BannerItem[]): Promise<boolean> 
     });
     return res.ok;
   } catch (e) {
+    console.error('Save Cloud Banners Error', e);
     return false;
   }
 }
@@ -188,6 +191,7 @@ export async function fetchCloudOrders(): Promise<Order[]> {
     const res = await fetch(freshUrl, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
       },
       cache: 'no-store',
     });

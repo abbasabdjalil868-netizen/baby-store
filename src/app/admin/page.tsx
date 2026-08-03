@@ -54,6 +54,7 @@ export default function AdminDashboard() {
     addBanner,
     updateBanner,
     deleteBanner,
+    refreshBanners,
     orders,
     updateOrderStatus,
     deleteOrder,
@@ -373,12 +374,12 @@ export default function AdminDashboard() {
     setIsBannerModalOpen(true);
   };
 
-  const handleSaveBanner = (e: React.FormEvent) => {
+  const handleSaveBanner = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bannerTitle || !bannerImage) return;
 
     if (editingBannerId) {
-      updateBanner(editingBannerId, {
+      await updateBanner(editingBannerId, {
         title: bannerTitle,
         subtitle: bannerSubtitle,
         badge: bannerBadge,
@@ -386,7 +387,7 @@ export default function AdminDashboard() {
         ctaText: bannerCtaText,
       });
     } else {
-      addBanner({
+      await addBanner({
         title: bannerTitle,
         subtitle: bannerSubtitle,
         badge: bannerBadge,
@@ -497,7 +498,10 @@ export default function AdminDashboard() {
           </button>
 
           <button
-            onClick={() => setActiveTab('banners')}
+            onClick={() => {
+              setActiveTab('banners');
+              refreshBanners();
+            }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 ${
               activeTab === 'banners'
                 ? 'bg-emerald-600 text-white shadow-sm'
@@ -656,7 +660,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Tab 2: Banners Management */}
+        {/* Tab 2: Banners Management with Cloud Sync & Refresh Button */}
         {activeTab === 'banners' && (
           <div>
             <div className="flex items-center justify-between gap-3 mb-6">
@@ -667,13 +671,23 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <button
-                onClick={() => handleOpenBannerModal()}
-                className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-colors shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>إضافة بنر جديد 🎡</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => refreshBanners()}
+                  className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-colors shrink-0"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>تحديث البنرات سحابياً 🔄</span>
+                </button>
+
+                <button
+                  onClick={() => handleOpenBannerModal()}
+                  className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm transition-colors shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة بنر جديد 🎡</span>
+                </button>
+              </div>
             </div>
 
             {/* Banners Grid */}
